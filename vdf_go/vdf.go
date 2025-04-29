@@ -29,10 +29,10 @@ func (vdf *VDF) GetOutputChannel() chan [516]byte {
 
 // Execute runs the VDF until it's finished and put the result into output channel.
 // currently on i7-6700K, it takes about 14 seconds when iteration is set to 10000
-func (vdf *VDF) Execute() {
+func (vdf *VDF) Execute(stop <-chan struct{}) {
 	vdf.finished = false
 
-	yBuf, proofBuf := GenerateVDF(vdf.input[:], vdf.difficulty, sizeInBits)
+	yBuf, proofBuf := GenerateVDFWithStopChan(vdf.input[:], vdf.difficulty, sizeInBits, stop)
 
 	copy(vdf.output[:], yBuf)
 	copy(vdf.output[258:], proofBuf)
