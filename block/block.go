@@ -17,7 +17,7 @@ type BlockHead struct {
     PreHash        [32]byte // Hash of the previous block head
     EpochBeginHash [32]byte // Hash marking the beginning of the epoch
 	PublicKey      [64]byte // Public key associated with the block
-	proof          [516]byte // Mining proof
+	Proof          [516]byte // Mining proof
 	MerkleRoot     [32]byte // Root hash of the Merkle tree
 }
 
