@@ -30,9 +30,7 @@ type Service struct {
 type BlockchainInterface interface {
 	AddBlock(block *block.Block) error
 	GetBlockByHash(hash []byte) (*block.Block, error)
-	GetTipHash() ([]byte, error)
-	GetBlockHeight(hash []byte) (int64, error)
-	// Add other methods as needed
+	GetTipBlock() (*block.Block, error)
 }
 
 // NewService creates and initializes a new P2P service

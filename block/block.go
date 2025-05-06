@@ -10,6 +10,9 @@ type Transaction struct {
 	FromAddress [32]byte // Address of the sender
 	ToAddress   [32]byte // Address of the receiver
 	Amount      float64  // Amount to be transferred
+    Rand        uint64
+    Signature      [64]byte
+	PublicKey      [64]byte 
 }
 
 type Block struct {

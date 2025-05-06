@@ -52,11 +52,11 @@ func (m *MockBlockchain) GetBlockByHash(hash []byte) (*block.Block, error) {
 	return nil, nil
 }
 
-func (m *MockBlockchain) GetTipHash() ([]byte, error) {
+func (m *MockBlockchain) GetTipBlock() (*block.Block, error) {
 	m.blocksMutex.RLock()
 	defer m.blocksMutex.RUnlock()
 
-	return m.tipHash[:], nil
+	return m.GetBlockByHash(m.tipHash[:])
 }
 
 func (m *MockBlockchain) GetBlockHeight(hash []byte) (int64, error) {

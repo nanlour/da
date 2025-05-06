@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-
-	"github.com/nanlour/da"
 )
 
 // GenerateKeyPair creates a new ECDSA keypair
@@ -87,7 +85,7 @@ func difficultySeed(epohHash *[32]byte, height uint64) [32]byte {
 }
 
 // Difficulty maps a signature to a Difficulty, evenly distributed way
-func Difficulty(signature []byte) uint64 {
+func Difficulty(signature []byte, StakeSum float64, StakeMine float64, MiningDifficulty uint64) uint64 {
 	// Hash the signature to ensure uniform distribution
 	signatureHash := sha256.Sum256(signature)
 
@@ -99,7 +97,7 @@ func Difficulty(signature []byte) uint64 {
 
 	// Divide by maximum uint64 value to get a float64 between 0 and 1
 	rm := math.Log(float64(value) / float64(^uint64(0)))
-	t := math.Log(float64(da.StakeSum / (da.StakeMine * float64(da.MiningDifficulty))))
+	t := math.Log(1 - float64(StakeMine / (StakeSum * float64(MiningDifficulty))))
 
-	return uint64(rm / t)
+	return 100 + uint64(rm / t)
 }

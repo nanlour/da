@@ -69,24 +69,12 @@ func (s *Service) handleGetTipRequest(stream network.Stream) {
 	// Process the request using the blockchain
 	var response BlockResponse
 
-	// Get the tip from the blockchain
-	tipHash, err := s.blockchain.GetTipHash()
+	block, err := s.blockchain.GetTipBlock()
 	if err != nil {
 		response.Error = err.Error()
 		json.NewEncoder(stream).Encode(response)
 		return
 	}
-
-	block, err := s.blockchain.GetBlockByHash(tipHash)
-	if err != nil {
-		response.Error = err.Error()
-		json.NewEncoder(stream).Encode(response)
-		return
-	}
-
-	// Convert slice to fixed-size array
-	var hashArray [32]byte
-	copy(hashArray[:], tipHash)
 
 	response.Block = block
 
@@ -104,11 +92,6 @@ func sendErrorResponse(stream network.Stream, errMsg string) {
 
 // GetBlockByHash requests a block from the P2P network by its hash
 func (s *Service) GetBlockByHash(hash [32]byte, peerID peer.ID) (*block.Block, error) {
-	peers := s.Peers()
-	if len(peers) == 0 {
-		return nil, fmt.Errorf("no connected peers")
-	}
-
 	// Create a new stream
 	stream, err := s.host.NewStream(s.ctx, peerID, protocol.ID(blockByHashProtocol))
 	if err != nil {
@@ -138,11 +121,6 @@ func (s *Service) GetBlockByHash(hash [32]byte, peerID peer.ID) (*block.Block, e
 
 // GetTip requests the current blockchain tip from the P2P network
 func (s *Service) GetTip(peerID peer.ID) (*block.Block, error) {
-	peers := s.Peers()
-	if len(peers) == 0 {
-		return nil, fmt.Errorf("no connected peers")
-	}
-
 	// Create a new stream
 	stream, err := s.host.NewStream(s.ctx, peerID, protocol.ID(getTipProtocol))
 	if err != nil {
