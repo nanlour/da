@@ -21,12 +21,9 @@ var (
 const (
 	accountBalancePrefix byte = 0x01 // Prefix for user-related data
 	hashHeightPrefix     byte = 0x03 // Prefix for block-related data
-	hashHeadPerfix       byte = 0x04
+	hashBlockPerfix      byte = 0x04
 	tipHash              byte = 0x05
-	heightHashPerfix           byte     = 0x06
-
-	BlockDir = "./blocks/"
-    DBDir = "./db"
+	heightHashPerfix     byte = 0x06
 )
 
 func PrefixKey(prefix byte, data []byte) []byte {
@@ -119,10 +116,10 @@ func (manager *DBManager) InsertBlockHeight(blockHash []byte, height int64) erro
     return manager.Insert(key, buf.Bytes())
 }
 
-// GetHashHead retrieves a BlockHead for a given block hash
-func (manager *DBManager) GetHashHead(hash []byte) (*block.BlockHead, error) {
+// GetHashBlockretrieves a Block for a given block hash
+func (manager *DBManager) GetHashBlock(hash []byte) (*block.Block, error) {
     // Create prefixed key
-    key := PrefixKey(hashHeadPerfix, hash[:])
+    key := PrefixKey(hashBlockPerfix, hash[:])
     
     // Get serialized data from the database
     data, err := manager.Get(key)
@@ -131,7 +128,7 @@ func (manager *DBManager) GetHashHead(hash []byte) (*block.BlockHead, error) {
     }
     
     // Deserialize the data into a BlockHead object
-    blockHead := &block.BlockHead{}
+    blockHead := &block.Block{}
     buf := bytes.NewReader(data)
     err = binary.Read(buf, binary.LittleEndian, blockHead)
     if err != nil {
@@ -141,14 +138,14 @@ func (manager *DBManager) GetHashHead(hash []byte) (*block.BlockHead, error) {
     return blockHead, nil
 }
 
-// InsertHashHead stores a BlockHead for a given block hash
-func (manager *DBManager) InsertHashHead(hash []byte, blockHead *block.BlockHead) error {
+// InsertHashBlock stores a Block for a given block hash
+func (manager *DBManager) InsertHashBlock(hash []byte, block *block.Block) error {
     // Create prefixed key
-    key := PrefixKey(hashHeadPerfix, hash[:])
+    key := PrefixKey(hashBlockPerfix, hash[:])
     
     // Serialize the BlockHead object
     buf := new(bytes.Buffer)
-    err := binary.Write(buf, binary.LittleEndian, blockHead)
+    err := binary.Write(buf, binary.LittleEndian, block)
     if err != nil {
         return err
     }
