@@ -5,9 +5,9 @@ import (
 	"errors"
 
 	"github.com/nanlour/da/block"
+	"github.com/nanlour/da/db"
 	"github.com/nanlour/da/p2p"
 	"github.com/nanlour/da/rpc"
-	"github.com/nanlour/da/util"
 )
 
 type Account struct {
@@ -61,7 +61,7 @@ func (bc *BlockChain) SetConfig(config *Config) {
 }
 
 func (bc *BlockChain) Init() error {
-	err := util.InitialDB(bc.NodeConfig.DbPath)
+	err := db.InitialDB(bc.NodeConfig.DbPath)
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func (bc *BlockChain) Stop() error {
 	var lastErr error
 
 	// Close the database
-	if err := util.MainDB.Close(); err != nil {
+	if err := db.MainDB.Close(); err != nil {
 		lastErr = err
 	}
 
@@ -122,16 +122,16 @@ func (bc *BlockChain) AddTxn(txn *block.Transaction) error {
 
 func (bc *BlockChain) GetBlockByHash(hash []byte) (*block.Block, error) {
 	// Retrieve block from database using hash
-	return util.MainDB.GetHashBlock(hash)
+	return db.MainDB.GetHashBlock(hash)
 }
 
 func (bc *BlockChain) GetTipBlock() (*block.Block, error) {
 	// First get the hash of the tip block
-	tipHash, err := util.MainDB.GetTipHash()
+	tipHash, err := db.MainDB.GetTipHash()
 	if err != nil {
 		return nil, err
 	}
 
 	// Then retrieve the block using the tip hash
-	return util.MainDB.GetHashBlock(tipHash)
+	return db.MainDB.GetHashBlock(tipHash)
 }

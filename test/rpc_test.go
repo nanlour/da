@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/nanlour/da/block"
+	"github.com/nanlour/da/db"
 	daRPC "github.com/nanlour/da/rpc"
-	"github.com/nanlour/da/util"
 )
 
 // TestRPCServer tests the basic functionality of the RPC server
@@ -56,11 +56,11 @@ func TestRPCServer(t *testing.T) {
 func TestBlockchainService(t *testing.T) {
 	// Initialize a test database in a temporary directory
 	tempDBPath := t.TempDir() + "/testdb"
-	err := util.InitialDB(tempDBPath)
+	err := db.InitialDB(tempDBPath)
 	if err != nil {
 		t.Fatalf("Failed to initialize test database: %v", err)
 	}
-	defer util.MainDB.Close()
+	defer db.MainDB.Close()
 
 	// Create test data
 	testBlockHash := make([]byte, 32)
@@ -69,13 +69,13 @@ func TestBlockchainService(t *testing.T) {
 	testAddr := make([]byte, 32)
 	copy(testAddr, []byte("testaddress12345678901234567890"))
 
-	err = util.MainDB.InsertTipHash(testBlockHash)
+	err = db.MainDB.InsertTipHash(testBlockHash)
 	if err != nil {
 		t.Fatalf("Failed to insert test tip hash: %v", err)
 	}
 
 	testBalance := 100.5
-	err = util.MainDB.InsertAccountBalance(testAddr, testBalance)
+	err = db.MainDB.InsertAccountBalance(testAddr, testBalance)
 	if err != nil {
 		t.Fatalf("Failed to insert test account balance: %v", err)
 	}
@@ -89,7 +89,7 @@ func TestBlockchainService(t *testing.T) {
 	testBlockData.Proof = [516]byte{13, 14, 15}
 
 	// Insert the test block
-	err = util.MainDB.InsertHashBlock(testBlockHash, &testBlockData)
+	err = db.MainDB.InsertHashBlock(testBlockHash, &testBlockData)
 	if err != nil {
 		t.Fatalf("Failed to insert test block: %v", err)
 	}

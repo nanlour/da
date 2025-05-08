@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/nanlour/da/util"
+	"github.com/nanlour/da/db"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -14,22 +14,22 @@ func TestDBManager(t *testing.T) {
 	defer os.RemoveAll(tempDir) // Clean up after test
 
 	// Initialize the database
-	err := util.InitialDB(tempDir)
+	err := db.InitialDB(tempDir)
 	if err != nil {
 		t.Fatalf("Failed to initialize DB: %v", err)
 	}
-	defer util.MainDB.Close()
+	defer db.MainDB.Close()
 
 	// Test Insert
 	key := []byte("testKey")
 	value := []byte("testValue")
-	err = util.MainDB.Insert(key, value)
+	err = db.MainDB.Insert(key, value)
 	if err != nil {
 		t.Errorf("Insert failed: %v", err)
 	}
 
 	// Test Get
-	retrievedValue, err := util.MainDB.Get(key)
+	retrievedValue, err := db.MainDB.Get(key)
 	if err != nil {
 		t.Errorf("Get failed: %v", err)
 	}
@@ -41,13 +41,13 @@ func TestDBManager(t *testing.T) {
 	batch := new(leveldb.Batch)
 	batch.Put([]byte("batchKey1"), []byte("batchValue1"))
 	batch.Put([]byte("batchKey2"), []byte("batchValue2"))
-	err = util.MainDB.BatchInsert(batch)
+	err = db.MainDB.BatchInsert(batch)
 	if err != nil {
 		t.Errorf("BatchInsert failed: %v", err)
 	}
 
 	// Verify BatchInsert
-	retrievedBatchValue, err := util.MainDB.Get([]byte("batchKey1"))
+	retrievedBatchValue, err := db.MainDB.Get([]byte("batchKey1"))
 	if err != nil || string(retrievedBatchValue) != "batchValue1" {
 		t.Errorf("BatchInsert verification failed for batchKey1")
 	}

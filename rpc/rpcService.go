@@ -4,14 +4,14 @@ import (
 	"errors"
 
 	"github.com/nanlour/da/block"
-	"github.com/nanlour/da/util"
+	"github.com/nanlour/da/db"
 )
 
 // BlockchainService defines the RPC methods for blockchain interaction
 type BlockchainService struct{}
 
 func (s *BlockchainService) GetTip(args *struct{}, reply *[32]byte) error {
-	tip, err := util.MainDB.GetTipHash()
+	tip, err := db.MainDB.GetTipHash()
 	if err != nil {
 		return err
 	}
@@ -26,7 +26,7 @@ func (s *BlockchainService) GetTip(args *struct{}, reply *[32]byte) error {
 
 func (s *BlockchainService) GetBlockByHash(hash [32]byte, reply *block.Block) error {
 	// Get block head data from database
-	blockHead, err := util.MainDB.GetHashBlock(hash[:])
+	blockHead, err := db.MainDB.GetHashBlock(hash[:])
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func (s *BlockchainService) GetBlockByHash(hash [32]byte, reply *block.Block) er
 
 func (s *BlockchainService) GetBalanceByAddress(address [32]byte, reply *float64) error {
 	// Get balance from database
-	balance, err := util.MainDB.GetAccountBalance(address[:])
+	balance, err := db.MainDB.GetAccountBalance(address[:])
 	if err != nil {
 		return err
 	}

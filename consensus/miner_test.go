@@ -8,25 +8,25 @@ import (
 	"time"
 
 	"github.com/nanlour/da/block"
+	"github.com/nanlour/da/db"
 	"github.com/nanlour/da/ecdsa_da"
-	"github.com/nanlour/da/util"
 )
 
 func TestMiningChan(t *testing.T) {
 	// Create a temporary DB for testing
 	tempDbPath := t.TempDir() + "/testdb"
-	err := util.InitialDB(tempDbPath)
+	err := db.InitialDB(tempDbPath)
 	if err != nil {
 		t.Fatalf("Failed to initialize test database: %v", err)
 	}
-	defer util.MainDB.Close()
+	defer db.MainDB.Close()
 
 	// Setup genesis block
 	genesisHash := genesisBlock.Hash()
-	if err := util.MainDB.InsertHashBlock(genesisHash[:], genesisBlock); err != nil {
+	if err := db.MainDB.InsertHashBlock(genesisHash[:], genesisBlock); err != nil {
 		t.Fatalf("Failed to insert genesis block: %v", err)
 	}
-	if err := util.MainDB.InsertTipHash(genesisHash[:]); err != nil {
+	if err := db.MainDB.InsertTipHash(genesisHash[:]); err != nil {
 		t.Fatalf("Failed to set genesis as tip: %v", err)
 	}
 
@@ -74,8 +74,8 @@ func TestMiningChan(t *testing.T) {
 			emptyTxn := bc.selectTransaction(1)
 
 			// Manually create a block using this transaction
-			tipHash, _ := util.MainDB.GetTipHash()
-			tipBlock, _ := util.MainDB.GetHashBlock(tipHash)
+			tipHash, _ := db.MainDB.GetTipHash()
+			tipBlock, _ := db.MainDB.GetHashBlock(tipHash)
 
 			newBlock := &block.Block{
 				PreHash:        bytesToHash32(tipHash),
@@ -125,8 +125,8 @@ func TestMiningChan(t *testing.T) {
 			txn := bc.selectTransaction(1)
 
 			// Manually create a block using this transaction
-			tipHash, _ := util.MainDB.GetTipHash()
-			tipBlock, _ := util.MainDB.GetHashBlock(tipHash)
+			tipHash, _ := db.MainDB.GetTipHash()
+			tipBlock, _ := db.MainDB.GetHashBlock(tipHash)
 
 			newBlock := &block.Block{
 				PreHash:        bytesToHash32(tipHash),

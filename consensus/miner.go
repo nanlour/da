@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/nanlour/da/block"
+	"github.com/nanlour/da/db"
 	"github.com/nanlour/da/ecdsa_da"
-	"github.com/nanlour/da/util"
 	"github.com/nanlour/da/vdf_go"
 )
 
@@ -18,14 +18,14 @@ func (bc *BlockChain) mine() {
 	// Run the mining loop indefinitely
 	for {
 		// Get the current tip hash and block
-		tipHash, err := util.MainDB.GetTipHash()
+		tipHash, err := db.MainDB.GetTipHash()
 		if err != nil {
 			log.Printf("Failed to get tip hash: %v, retrying in 5s", err)
 			time.Sleep(5 * time.Second)
 			continue
 		}
 
-		tipBlock, err := util.MainDB.GetHashBlock(tipHash)
+		tipBlock, err := db.MainDB.GetHashBlock(tipHash)
 		if err != nil {
 			log.Printf("Failed to get tip block: %v, retrying in 5s", err)
 			time.Sleep(5 * time.Second)
@@ -63,7 +63,7 @@ func (bc *BlockChain) mine() {
 			for {
 				select {
 				case <-ticker.C:
-					latestTipHash, err := util.MainDB.GetTipHash()
+					latestTipHash, err := db.MainDB.GetTipHash()
 					if err != nil {
 						log.Printf("Error checking tip hash: %v", err)
 						continue
