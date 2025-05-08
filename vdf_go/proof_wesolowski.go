@@ -13,8 +13,8 @@ import (
 	"time"
 )
 
-//Creates L and k parameters from papers, based on how many iterations need to be
-//performed, and how much memory should be used.
+// Creates L and k parameters from papers, based on how many iterations need to be
+// performed, and how much memory should be used.
 func approximateParameters(T int) (int, int, int) {
 	//log_memory = math.log(10000000, 2)
 	log_memory := math.Log(10000000) / math.Log(2)
@@ -130,7 +130,7 @@ func getBlock(i, k, T int, B *big.Int) *big.Int {
 	return floorDivision(new(big.Int).Mul(p1, p2), B)
 }
 
-//Optimized evalutation of h ^ (2^T // B)
+// Optimized evalutation of h ^ (2^T // B)
 func evalOptimized(identity, h *ClassGroup, B *big.Int, T, k, l int, C map[int]*ClassGroup) *ClassGroup {
 	//k1 = k//2
 	var k1 int = k / 2
@@ -216,7 +216,7 @@ func evalOptimized(identity, h *ClassGroup, B *big.Int, T, k, l int, C map[int]*
 	return x
 }
 
-//generate y = x ^ (2 ^T) and pi
+// generate y = x ^ (2 ^T) and pi
 func generateProof(identity, x, y *ClassGroup, T, k, l int, powers map[int]*ClassGroup) *ClassGroup {
 	//x_s = x.serialize()
 	x_s := x.Serialize()

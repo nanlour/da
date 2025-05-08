@@ -27,10 +27,10 @@ const (
 )
 
 func PrefixKey(prefix byte, data []byte) []byte {
-    result := make([]byte, 1+len(data))
-    result[0] = prefix
-    copy(result[1:], data)
-    return result
+	result := make([]byte, 1+len(data))
+	result[0] = prefix
+	copy(result[1:], data)
+	return result
 }
 
 // InitialDB initializes and returns a new DBManager instance
@@ -67,121 +67,121 @@ func (manager *DBManager) Get(key []byte) ([]byte, error) {
 
 // Account Balance functions (float64)
 func (manager *DBManager) GetAccountBalance(address []byte) (float64, error) {
-    key := PrefixKey(accountBalancePrefix, address[:])
-    data, err := manager.Get(key)
-    if err != nil {
-        return 0, err
-    }
-    
-    bits := binary.LittleEndian.Uint64(data)
-    return math.Float64frombits(bits), nil
+	key := PrefixKey(accountBalancePrefix, address[:])
+	data, err := manager.Get(key)
+	if err != nil {
+		return 0, err
+	}
+
+	bits := binary.LittleEndian.Uint64(data)
+	return math.Float64frombits(bits), nil
 }
 
 func (manager *DBManager) InsertAccountBalance(address []byte, balance float64) error {
-    key := PrefixKey(accountBalancePrefix, address[:])
-    
-    buf := make([]byte, 8)
-    binary.LittleEndian.PutUint64(buf, math.Float64bits(balance))
-    
-    return manager.Insert(key, buf)
+	key := PrefixKey(accountBalancePrefix, address[:])
+
+	buf := make([]byte, 8)
+	binary.LittleEndian.PutUint64(buf, math.Float64bits(balance))
+
+	return manager.Insert(key, buf)
 }
 
 // Hash Height functions (int64)
 func (manager *DBManager) GetBlockHeight(blockHash []byte) (int64, error) {
-    key := PrefixKey(hashHeightPrefix, blockHash[:])
-    data, err := manager.Get(key)
-    if err != nil {
-        return 0, err
-    }
-    
-    var height int64
-    buf := bytes.NewReader(data)
-    err = binary.Read(buf, binary.LittleEndian, &height)
-    if err != nil {
-        return 0, err
-    }
-    
-    return height, nil
+	key := PrefixKey(hashHeightPrefix, blockHash[:])
+	data, err := manager.Get(key)
+	if err != nil {
+		return 0, err
+	}
+
+	var height int64
+	buf := bytes.NewReader(data)
+	err = binary.Read(buf, binary.LittleEndian, &height)
+	if err != nil {
+		return 0, err
+	}
+
+	return height, nil
 }
 
 func (manager *DBManager) InsertBlockHeight(blockHash []byte, height int64) error {
-    key := PrefixKey(hashHeightPrefix, blockHash[:])
-    
-    buf := new(bytes.Buffer)
-    err := binary.Write(buf, binary.LittleEndian, height)
-    if err != nil {
-        return err
-    }
-    
-    return manager.Insert(key, buf.Bytes())
+	key := PrefixKey(hashHeightPrefix, blockHash[:])
+
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, height)
+	if err != nil {
+		return err
+	}
+
+	return manager.Insert(key, buf.Bytes())
 }
 
 // GetHashBlockretrieves a Block for a given block hash
 func (manager *DBManager) GetHashBlock(hash []byte) (*block.Block, error) {
-    // Create prefixed key
-    key := PrefixKey(hashBlockPerfix, hash[:])
-    
-    // Get serialized data from the database
-    data, err := manager.Get(key)
-    if err != nil {
-        return nil, err
-    }
-    
-    // Deserialize the data into a BlockHead object
-    blockHead := &block.Block{}
-    buf := bytes.NewReader(data)
-    err = binary.Read(buf, binary.LittleEndian, blockHead)
-    if err != nil {
-        return nil, err
-    }
-    
-    return blockHead, nil
+	// Create prefixed key
+	key := PrefixKey(hashBlockPerfix, hash[:])
+
+	// Get serialized data from the database
+	data, err := manager.Get(key)
+	if err != nil {
+		return nil, err
+	}
+
+	// Deserialize the data into a BlockHead object
+	blockHead := &block.Block{}
+	buf := bytes.NewReader(data)
+	err = binary.Read(buf, binary.LittleEndian, blockHead)
+	if err != nil {
+		return nil, err
+	}
+
+	return blockHead, nil
 }
 
 // InsertHashBlock stores a Block for a given block hash
 func (manager *DBManager) InsertHashBlock(hash []byte, block *block.Block) error {
-    // Create prefixed key
-    key := PrefixKey(hashBlockPerfix, hash[:])
-    
-    // Serialize the BlockHead object
-    buf := new(bytes.Buffer)
-    err := binary.Write(buf, binary.LittleEndian, block)
-    if err != nil {
-        return err
-    }
-    
-    // Store in database
-    return manager.Insert(key, buf.Bytes())
+	// Create prefixed key
+	key := PrefixKey(hashBlockPerfix, hash[:])
+
+	// Serialize the BlockHead object
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, block)
+	if err != nil {
+		return err
+	}
+
+	// Store in database
+	return manager.Insert(key, buf.Bytes())
 }
 
 // Tip Hash functions
 func (manager *DBManager) GetTipHash() ([]byte, error) {
-    return manager.Get([]byte{tipHash})
+	return manager.Get([]byte{tipHash})
 }
 
 func (manager *DBManager) InsertTipHash(hash []byte) error {
-    return manager.Insert([]byte{tipHash}, hash)
+	return manager.Insert([]byte{tipHash}, hash)
 }
 
 // Height Hash functions (int64 height)
 func (manager *DBManager) GetHeightHash(height int64) ([]byte, error) {
-    buf := new(bytes.Buffer)
-    err := binary.Write(buf, binary.LittleEndian, height)
-    if err != nil {
-        return nil, err
-    }
-    
-    key := PrefixKey(heightHashPerfix, buf.Bytes())
-    return manager.Get(key)
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, height)
+	if err != nil {
+		return nil, err
+	}
+
+	key := PrefixKey(heightHashPerfix, buf.Bytes())
+	return manager.Get(key)
 }
 
 func (manager *DBManager) InsertHeightHash(height int64, hash []byte) error {
-    buf := new(bytes.Buffer)
-    err := binary.Write(buf, binary.LittleEndian, height)
-    if err != nil {
-        return err
-    }
-    
-    key := PrefixKey(heightHashPerfix, buf.Bytes())
-    return manager.Insert(key, hash)
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, height)
+	if err != nil {
+		return err
+	}
+
+	key := PrefixKey(heightHashPerfix, buf.Bytes())
+	return manager.Insert(key, hash)
 }

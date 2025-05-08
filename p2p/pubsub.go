@@ -111,54 +111,54 @@ func (s *Service) BroadcastTransaction(tx *Transaction) error {
 
 // Process incoming block messages
 func (pm *PubSubManager) processBlockMessages() {
-    for {
-        msg, err := pm.blockSub.Next(pm.ctx)
-        if err != nil {
-            // Context canceled or subscription closed
-            return
-        }
+	for {
+		msg, err := pm.blockSub.Next(pm.ctx)
+		if err != nil {
+			// Context canceled or subscription closed
+			return
+		}
 
-        // Get the sender's peer ID
-        sender := msg.ReceivedFrom.String()
+		// Get the sender's peer ID
+		sender := msg.ReceivedFrom.String()
 
-        var block block.Block
-        if err := json.Unmarshal(msg.Data, &block); err != nil {
-            fmt.Printf("Error unmarshaling block from %s: %s\n", sender, err)
-            continue
-        }
+		var block block.Block
+		if err := json.Unmarshal(msg.Data, &block); err != nil {
+			fmt.Printf("Error unmarshaling block from %s: %s\n", sender, err)
+			continue
+		}
 
-        // Add the block to the blockchain
-        if err := pm.blockchain.AddBlock(&block); err != nil {
-            fmt.Printf("Error adding block from %s to blockchain: %s\n", sender, err)
-            continue
-        }
+		// Add the block to the blockchain
+		if err := pm.blockchain.AddBlock(&block); err != nil {
+			fmt.Printf("Error adding block from %s to blockchain: %s\n", sender, err)
+			continue
+		}
 
-        fmt.Printf("Received and added new block from %s: %x\n", sender, block)
-    }
+		fmt.Printf("Received and added new block from %s: %x\n", sender, block)
+	}
 }
 
 // Process incoming transaction messages
 func (pm *PubSubManager) processTxMessages() {
-    for {
-        msg, err := pm.txSub.Next(pm.ctx)
-        if err != nil {
-            // Context canceled or subscription closed
-            return
-        }
+	for {
+		msg, err := pm.txSub.Next(pm.ctx)
+		if err != nil {
+			// Context canceled or subscription closed
+			return
+		}
 
-        // Get the sender's peer ID
-        sender := msg.ReceivedFrom.String()
+		// Get the sender's peer ID
+		sender := msg.ReceivedFrom.String()
 
-        var tx Transaction
-        if err := json.Unmarshal(msg.Data, &tx); err != nil {
-            fmt.Printf("Error unmarshaling transaction from %s: %s\n", sender, err)
-            continue
-        }
+		var tx Transaction
+		if err := json.Unmarshal(msg.Data, &tx); err != nil {
+			fmt.Printf("Error unmarshaling transaction from %s: %s\n", sender, err)
+			continue
+		}
 
-        // Process the transaction (add to mempool, etc.)
-        fmt.Printf("Received new transaction from %s: %x\n", sender, tx.Data)
+		// Process the transaction (add to mempool, etc.)
+		fmt.Printf("Received new transaction from %s: %x\n", sender, tx.Data)
 
-        // You would typically add this transaction to a mempool
-        // and then include it in a future block
-    }
+		// You would typically add this transaction to a mempool
+		// and then include it in a future block
+	}
 }

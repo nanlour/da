@@ -4,7 +4,7 @@ import (
 	"math/big"
 )
 
-//Return r, s, t such that gcd(a, b) = r = a * s + b * t
+// Return r, s, t such that gcd(a, b) = r = a * s + b * t
 func extendedGCD(a, b *big.Int) (r, s, t *big.Int) {
 	//r0, r1 = a, b
 	r0 := new(big.Int).Set(a)
@@ -51,12 +51,12 @@ func extendedGCD(a, b *big.Int) (r, s, t *big.Int) {
 	return r0, s0, t0
 }
 
-//wrapper around big.Int GCD to allow all input values for GCD
-//as Golang big.Int GCD requires both a, b > 0
-//If a == b == 0, GCD sets r = 0.
-//If a == 0 and b != 0, GCD sets r = |b|
-//If a != 0 and b == 0, GCD sets r = |a|
-//Otherwise r = GCD(|a|, |b|)
+// wrapper around big.Int GCD to allow all input values for GCD
+// as Golang big.Int GCD requires both a, b > 0
+// If a == b == 0, GCD sets r = 0.
+// If a == 0 and b != 0, GCD sets r = |b|
+// If a != 0 and b == 0, GCD sets r = |a|
+// Otherwise r = GCD(|a|, |b|)
 func allInputValueGCD(a, b *big.Int) (r *big.Int) {
 	if a.Sign() == 0 {
 		return new(big.Int).Abs(b)
@@ -69,8 +69,8 @@ func allInputValueGCD(a, b *big.Int) (r *big.Int) {
 	return new(big.Int).GCD(nil, nil, new(big.Int).Abs(a), new(big.Int).Abs(b))
 }
 
-//Solve ax == b mod m for x.
-//Return s, t where x = s + k * t for integer k yields all solutions.
+// Solve ax == b mod m for x.
+// Return s, t where x = s + k * t for integer k yields all solutions.
 func SolveMod(a, b, m *big.Int) (s, t *big.Int, solvable bool) {
 	//g, d, e = extended_gcd(a, m)
 	//TODO: golang 1.x big.int GCD requires both a > 0 and m > 0, so we can't use it :(

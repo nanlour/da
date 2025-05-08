@@ -11,29 +11,30 @@ import (
 )
 
 type Account struct {
-	PriKey  *ecdsa.PrivateKey
-	PubKey  *ecdsa.PublicKey
+	PrvKey  ecdsa.PrivateKey
+	PubKey  ecdsa.PublicKey
 	Address [32]byte
 }
 
 type Config struct {
 	ID               Account
-	StakeSum         float64
 	StakeMine        float64
 	MiningDifficulty uint64
 	DbPath           string
 	RPCPort          int
-	listenAddr 		string
-	stake           map[[32]byte]float64
+	ListenAddr       string
+	InitStake        map[[32]byte]float64
+	StakeSum         float64
+	InitBank         map[[32]byte]float64
 }
 
 type BlockChain struct {
 	RPCserver  *rpc.RPCServer
 	P2PNode    *p2p.Service
 	NodeConfig *Config
-	stake       map[[32]byte]float64 // Network stake state
-	MiningChan  chan *block.Block  // Channel for newly mined blocks
-    P2PChan     chan *block.Block // Channel for blocks received via P2P
+	TxnPool    map[uint64]*block.Transaction // Txn pool
+	MiningChan chan *block.Block             // Channel for newly mined blocks
+	P2PChan    chan *block.Block             // Channel for blocks received via P2P
 }
 
 var (
@@ -68,15 +69,16 @@ func (bc *BlockChain) Init() error {
 	bc.RPCserver = rpc.NewRPCServer(bc.NodeConfig.RPCPort)
 	bc.RPCserver.Start()
 
-	bc.P2PNode, err = p2p.NewService(bc.NodeConfig.listenAddr, bc)
+	bc.P2PNode, err = p2p.NewService(bc.NodeConfig.ListenAddr, bc)
 	if err != nil {
 		return err
 	}
 
-	bc.stake = bc.NodeConfig.stake
+	bc.P2PChan = make(chan *block.Block, 100)
+	bc.MiningChan = make(chan *block.Block, 10)
 
-	bc.P2PChan = make(chan *block.Block, 100) 
-	bc.MiningChan = make(chan *block.Block, 10) 
+	// Start mine
+	go bc.mine()
 
 	return nil
 }
@@ -103,30 +105,28 @@ func (bc *BlockChain) Stop() error {
 }
 
 func (bc *BlockChain) AddBlock(block *block.Block) error {
-    select {
-    case bc.P2PChan <- block:
-        // Message sent successfully
-        return nil
-    default:
-        // Channel is full or no receiver ready
-        return errors.New("channel is full, cannot send block")
-    }
+	select {
+	case bc.P2PChan <- block:
+		// Message sent successfully
+		return nil
+	default:
+		// Channel is full or no receiver ready
+		return errors.New("channel is full, cannot send block")
+	}
 }
 
 func (bc *BlockChain) GetBlockByHash(hash []byte) (*block.Block, error) {
-    // Retrieve block from database using hash
-    return util.MainDB.GetHashBlock(hash)
+	// Retrieve block from database using hash
+	return util.MainDB.GetHashBlock(hash)
 }
 
 func (bc *BlockChain) GetTipBlock() (*block.Block, error) {
-    // First get the hash of the tip block
-    tipHash, err := util.MainDB.GetTipHash()
-    if err != nil {
-        return nil, err
-    }
-    
-    // Then retrieve the block using the tip hash
-    return util.MainDB.GetHashBlock(tipHash)
+	// First get the hash of the tip block
+	tipHash, err := util.MainDB.GetTipHash()
+	if err != nil {
+		return nil, err
+	}
+
+	// Then retrieve the block using the tip hash
+	return util.MainDB.GetHashBlock(tipHash)
 }
-
-

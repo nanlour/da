@@ -28,7 +28,7 @@ func primeLessThanN(num int) []int {
 	return primes
 }
 
-//testing
+// testing
 func checkArrayEqual(a []int, b []int) bool {
 	if len(a) != len(b) {
 		return false
