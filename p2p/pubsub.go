@@ -15,12 +15,6 @@ const (
 	txTopic    = "transactions"
 )
 
-// Transaction represents a blockchain transaction
-type Transaction struct {
-	Data []byte `json:"data"`
-	// Add other transaction fields as needed
-}
-
 // PubSubManager manages pubsub functionality
 type PubSubManager struct {
 	ps         *pubsub.PubSub
@@ -96,7 +90,7 @@ func (s *Service) BroadcastBlock(block *block.Block) error {
 }
 
 // BroadcastTransaction broadcasts a transaction to the network
-func (s *Service) BroadcastTransaction(tx *Transaction) error {
+func (s *Service) BroadcastTransaction(tx *block.Transaction) error {
 	if s.pubsubMgr == nil || s.pubsubMgr.txTopic == nil {
 		return fmt.Errorf("pubsub not initialized")
 	}
@@ -149,16 +143,19 @@ func (pm *PubSubManager) processTxMessages() {
 		// Get the sender's peer ID
 		sender := msg.ReceivedFrom.String()
 
-		var tx Transaction
+		var tx block.Transaction
 		if err := json.Unmarshal(msg.Data, &tx); err != nil {
 			fmt.Printf("Error unmarshaling transaction from %s: %s\n", sender, err)
 			continue
 		}
 
-		// Process the transaction (add to mempool, etc.)
-		fmt.Printf("Received new transaction from %s: %x\n", sender, tx.Data)
+		// Add the txn to mempool
+		if err := pm.blockchain.AddTxn(&tx); err != nil {
+			fmt.Printf("Error adding block from %s to blockchain: %s\n", sender, err)
+			continue
+		}
 
-		// You would typically add this transaction to a mempool
-		// and then include it in a future block
+		// Process the transaction (add to mempool, etc.)
+		fmt.Printf("Received new transaction from %s: %x\n", sender, tx.Hash())
 	}
 }

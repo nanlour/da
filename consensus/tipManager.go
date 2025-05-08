@@ -61,22 +61,9 @@ func (bc *BlockChain) processNewBlock(newBlock *block.Block, isLocal bool) error
 		return fmt.Errorf("failed to get current tip: %w", err)
 	}
 
-	if err != nil {
-		return fmt.Errorf("failed to get tip block: %w", err)
-	}
-
 	// Store the block in the database regardless of whether it's on the main chain
 	if err := util.MainDB.InsertHashBlock(blockHash[:], newBlock); err != nil {
 		return fmt.Errorf("failed to store block: %w", err)
-	}
-
-	// Set block height mapping
-	if err := util.MainDB.InsertBlockHeight(blockHash[:], int64(newBlock.Height)); err != nil {
-		return fmt.Errorf("failed to set block height: %w", err)
-	}
-
-	if err := util.MainDB.InsertHeightHash(int64(newBlock.Height), blockHash[:]); err != nil {
-		return fmt.Errorf("failed to set height->hash mapping: %w", err)
 	}
 
 	// Check if this block builds on our current tip
@@ -89,24 +76,6 @@ func (bc *BlockChain) processNewBlock(newBlock *block.Block, isLocal bool) error
 	// Potential fork detected - need to determine the longest chain
 	log.Printf("Potential fork detected at height %d, resolving...\n", newBlock.Height)
 
-	// Get height of current tip
-	tipHeight, err := util.MainDB.GetBlockHeight(tipHash)
-	if err != nil {
-		return fmt.Errorf("failed to get tip height: %w", err)
-	}
-
-	// If the new block is on a fork with greater height, it becomes the new tip
-	if newBlock.Height > uint64(tipHeight) {
-		log.Printf("Fork resolution: Block %x creates a longer chain (height %d > %d)\n",
-			blockHash, newBlock.Height, tipHeight)
-		return util.MainDB.InsertTipHash(blockHash[:])
-	} else if newBlock.Height == uint64(tipHeight) && isLocal {
-		// If heights are equal and this is our own mined block, prefer it
-		log.Printf("Fork resolution: Equal height chains, preferring locally mined block %x\n", blockHash)
-		return util.MainDB.InsertTipHash(blockHash[:])
-	}
-
-	log.Printf("Fork resolution: Keeping existing tip (height %d >= %d)\n", tipHeight, newBlock.Height)
 	return nil
 }
 

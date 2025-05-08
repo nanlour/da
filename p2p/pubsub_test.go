@@ -78,9 +78,7 @@ func TestPubSub(t *testing.T) {
 	// Test Transaction Broadcasting
 	t.Run("Transaction Broadcasting", func(t *testing.T) {
 		// Create a test transaction
-		testTx := &Transaction{
-			Data: []byte("test transaction data"),
-		}
+		testTx := &block.Transaction{}
 
 		// Broadcast the transaction from service2
 		err = service2.BroadcastTransaction(testTx)

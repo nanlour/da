@@ -32,9 +32,9 @@ type BlockChain struct {
 	RPCserver  *rpc.RPCServer
 	P2PNode    *p2p.Service
 	NodeConfig *Config
-	TxnPool    map[uint64]*block.Transaction // Txn pool
-	MiningChan chan *block.Block             // Channel for newly mined blocks
-	P2PChan    chan *block.Block             // Channel for blocks received via P2P
+	MiningChan chan *block.Block // Channel for newly mined blocks
+	P2PChan    chan *block.Block // Channel for blocks received via P2P
+	TxnPool    TransactionPool
 }
 
 var (
@@ -113,6 +113,11 @@ func (bc *BlockChain) AddBlock(block *block.Block) error {
 		// Channel is full or no receiver ready
 		return errors.New("channel is full, cannot send block")
 	}
+}
+
+func (bc *BlockChain) AddTxn(txn *block.Transaction) error {
+	bc.TxnPool.AddTransaction(txn.Height, txn)
+	return nil
 }
 
 func (bc *BlockChain) GetBlockByHash(hash []byte) (*block.Block, error) {

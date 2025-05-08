@@ -39,6 +39,10 @@ func (m *MockBlockchain) AddBlock(b *block.Block) error {
 	return nil
 }
 
+func (m *MockBlockchain) AddTxn(b *block.Transaction) error {
+	return nil
+}
+
 func (m *MockBlockchain) GetBlockByHash(hash []byte) (*block.Block, error) {
 	m.blocksMutex.RLock()
 	defer m.blocksMutex.RUnlock()

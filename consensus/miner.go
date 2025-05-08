@@ -125,7 +125,7 @@ func bytesToHash32(data []byte) [32]byte {
 // Select a transaction from the transaction pool
 func (bc *BlockChain) selectTransaction(height uint64) block.Transaction {
 	// Try to find a transaction for this height in the pool
-	if txn, exists := bc.TxnPool[height]; exists && txn != nil {
+	if txn, exists := bc.TxnPool.GetTransaction(height); exists && txn != nil {
 		return *txn
 	}
 

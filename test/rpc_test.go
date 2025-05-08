@@ -69,13 +69,6 @@ func TestBlockchainService(t *testing.T) {
 	testAddr := make([]byte, 32)
 	copy(testAddr, []byte("testaddress12345678901234567890"))
 
-	// Prepare test data in database
-	testHeight := int64(123)
-	err = util.MainDB.InsertBlockHeight(testBlockHash, testHeight)
-	if err != nil {
-		t.Fatalf("Failed to insert test block height: %v", err)
-	}
-
 	err = util.MainDB.InsertTipHash(testBlockHash)
 	if err != nil {
 		t.Fatalf("Failed to insert test tip hash: %v", err)
@@ -123,7 +116,7 @@ func TestBlockchainService(t *testing.T) {
 
 	// Test 1: GetTip RPC call
 	t.Run("GetTip", func(t *testing.T) {
-		var tip daRPC.Tip
+		var tip [32]byte
 		err = client.Call("BlockchainService.GetTip", &struct{}{}, &tip)
 		if err != nil {
 			t.Errorf("Error calling GetTip: %v", err)
@@ -132,11 +125,8 @@ func TestBlockchainService(t *testing.T) {
 		var expectedHash [32]byte
 		copy(expectedHash[:], testBlockHash)
 
-		if tip.Hash != expectedHash {
-			t.Errorf("GetTip returned wrong hash: got %x, want %x", tip.Hash, expectedHash)
-		}
-		if tip.Height != uint64(testHeight) {
-			t.Errorf("GetTip returned wrong height: got %d, want %d", tip.Height, testHeight)
+		if tip != expectedHash {
+			t.Errorf("GetTip returned wrong hash: got %x, want %x", tip, expectedHash)
 		}
 	})
 

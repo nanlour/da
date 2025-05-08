@@ -7,33 +7,19 @@ import (
 	"github.com/nanlour/da/util"
 )
 
-// BlockInfo represents block data returned by RPC calls
-type Tip struct {
-	Hash   [32]byte
-	Height uint64
-}
-
 // BlockchainService defines the RPC methods for blockchain interaction
 type BlockchainService struct{}
 
-func (s *BlockchainService) GetTip(args *struct{}, reply *Tip) error {
+func (s *BlockchainService) GetTip(args *struct{}, reply *[32]byte) error {
 	tip, err := util.MainDB.GetTipHash()
 	if err != nil {
 		return err
 	}
-
-	height, err := util.MainDB.GetBlockHeight(tip)
-	if err != nil {
-		return err
-	}
-
-	// Convert slice to fixed-size array
 	var hashArray [32]byte
 	copy(hashArray[:], tip)
 
 	// Assign to the reply pointer
-	reply.Hash = hashArray
-	reply.Height = uint64(height) // Convert int64 to uint64
+	*reply = hashArray
 
 	return nil
 }

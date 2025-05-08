@@ -26,12 +26,6 @@ func TestMiningChan(t *testing.T) {
 	if err := util.MainDB.InsertHashBlock(genesisHash[:], genesisBlock); err != nil {
 		t.Fatalf("Failed to insert genesis block: %v", err)
 	}
-	if err := util.MainDB.InsertBlockHeight(genesisHash[:], 0); err != nil {
-		t.Fatalf("Failed to set genesis block height: %v", err)
-	}
-	if err := util.MainDB.InsertHeightHash(0, genesisHash[:]); err != nil {
-		t.Fatalf("Failed to set genesis height->hash mapping: %v", err)
-	}
 	if err := util.MainDB.InsertTipHash(genesisHash[:]); err != nil {
 		t.Fatalf("Failed to set genesis as tip: %v", err)
 	}
@@ -65,7 +59,9 @@ func TestMiningChan(t *testing.T) {
 			},
 			StakeSum: 100.0,
 		},
-		TxnPool:    make(map[uint64]*block.Transaction),
+		TxnPool: TransactionPool{
+			txnMap: make(map[uint64]*block.Transaction),
+		},
 		MiningChan: make(chan *block.Block, 10),
 		P2PChan:    make(chan *block.Block, 10),
 	}
@@ -121,7 +117,7 @@ func TestMiningChan(t *testing.T) {
 	// Test Case 2: Mining with a transaction in pool
 	t.Run("Mining with transaction in pool", func(t *testing.T) {
 		// Add transaction to the pool
-		bc.TxnPool[1] = testTxn
+		bc.TxnPool.AddTransaction(1, testTxn)
 
 		// Start mining in a goroutine
 		go func() {

@@ -20,10 +20,8 @@ var (
 // TODO: move const define to delicate file
 const (
 	accountBalancePrefix byte = 0x01 // Prefix for user-related data
-	hashHeightPrefix     byte = 0x03 // Prefix for block-related data
-	hashBlockPerfix      byte = 0x04
-	tipHash              byte = 0x05
-	heightHashPerfix     byte = 0x06
+	hashBlockPerfix      byte = 0x02
+	tipHash              byte = 0x03
 )
 
 func PrefixKey(prefix byte, data []byte) []byte {
@@ -86,36 +84,6 @@ func (manager *DBManager) InsertAccountBalance(address []byte, balance float64) 
 	return manager.Insert(key, buf)
 }
 
-// Hash Height functions (int64)
-func (manager *DBManager) GetBlockHeight(blockHash []byte) (int64, error) {
-	key := PrefixKey(hashHeightPrefix, blockHash[:])
-	data, err := manager.Get(key)
-	if err != nil {
-		return 0, err
-	}
-
-	var height int64
-	buf := bytes.NewReader(data)
-	err = binary.Read(buf, binary.LittleEndian, &height)
-	if err != nil {
-		return 0, err
-	}
-
-	return height, nil
-}
-
-func (manager *DBManager) InsertBlockHeight(blockHash []byte, height int64) error {
-	key := PrefixKey(hashHeightPrefix, blockHash[:])
-
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, height)
-	if err != nil {
-		return err
-	}
-
-	return manager.Insert(key, buf.Bytes())
-}
-
 // GetHashBlockretrieves a Block for a given block hash
 func (manager *DBManager) GetHashBlock(hash []byte) (*block.Block, error) {
 	// Create prefixed key
@@ -161,27 +129,4 @@ func (manager *DBManager) GetTipHash() ([]byte, error) {
 
 func (manager *DBManager) InsertTipHash(hash []byte) error {
 	return manager.Insert([]byte{tipHash}, hash)
-}
-
-// Height Hash functions (int64 height)
-func (manager *DBManager) GetHeightHash(height int64) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, height)
-	if err != nil {
-		return nil, err
-	}
-
-	key := PrefixKey(heightHashPerfix, buf.Bytes())
-	return manager.Get(key)
-}
-
-func (manager *DBManager) InsertHeightHash(height int64, hash []byte) error {
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, height)
-	if err != nil {
-		return err
-	}
-
-	key := PrefixKey(heightHashPerfix, buf.Bytes())
-	return manager.Insert(key, hash)
 }
