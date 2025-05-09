@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"math"
 
-	"github.com/nanlour/da/block"
+	"github.com/nanlour/da/src/block"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 

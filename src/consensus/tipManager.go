@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/libp2p/go-libp2p/core/peer"
-	"github.com/nanlour/da/block"
+	"github.com/nanlour/da/src/block"
 )
 
 func (bc *BlockChain) TipManager() {

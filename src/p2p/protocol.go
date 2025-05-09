@@ -7,7 +7,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
-	"github.com/nanlour/da/block"
+	"github.com/nanlour/da/src/block"
 )
 
 const (

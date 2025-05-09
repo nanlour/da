@@ -1,7 +1,7 @@
 package da
 
 import (
-	"github.com/nanlour/da/consensus"
+	"github.com/nanlour/da/src/consensus"
 )
 
 func main() {

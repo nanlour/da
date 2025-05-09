@@ -3,7 +3,7 @@ package rpc
 import (
 	"errors"
 
-	"github.com/nanlour/da/block"
+	"github.com/nanlour/da/src/block"
 )
 
 // BlockchainService defines the RPC methods for blockchain interaction

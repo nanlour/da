@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
-	"github.com/nanlour/da/block"
+	"github.com/nanlour/da/src/block"
 )
 
 const (

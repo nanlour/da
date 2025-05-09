@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/nanlour/da/block"
+	"github.com/nanlour/da/src/block"
 )
 
 // createTempDB creates a temporary database for testing

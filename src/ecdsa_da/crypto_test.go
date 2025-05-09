@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nanlour/da/vdf_go"
+	"github.com/nanlour/da/src/vdf_go"
 )
 
 // TestSign verifies that signatures created with Sign can be verified

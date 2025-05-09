@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/nanlour/da/block"
-	"github.com/nanlour/da/ecdsa_da"
-	"github.com/nanlour/da/vdf_go"
+	"github.com/nanlour/da/src/block"
+	"github.com/nanlour/da/src/ecdsa_da"
+	"github.com/nanlour/da/src/vdf_go"
 )
 
 func (bc *BlockChain) mine() {

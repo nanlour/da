@@ -3,7 +3,7 @@ package consensus
 import (
 	"sync"
 
-	"github.com/nanlour/da/block"
+	"github.com/nanlour/da/src/block"
 )
 
 type TransactionPool struct {
