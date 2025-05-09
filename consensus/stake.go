@@ -44,6 +44,5 @@ func (bc *BlockChain) VerifyBlock(block *block.Block) bool {
 		return false
 	}
 
-
 	return vdf.Verify(block.Proof)
 }

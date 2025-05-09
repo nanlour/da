@@ -13,10 +13,6 @@ type DBManager struct {
 	db *leveldb.DB
 }
 
-var (
-	MainDB *DBManager
-)
-
 // TODO: move const define to delicate file
 const (
 	accountBalancePrefix byte = 0x01 // Prefix for user-related data
@@ -32,13 +28,13 @@ func PrefixKey(prefix byte, data []byte) []byte {
 }
 
 // InitialDB initializes and returns a new DBManager instance
-func InitialDB(path string) error {
+func InitialDB(path string) (*DBManager, error) {
 	db, err := leveldb.OpenFile(path, nil) // Open the database
 	if err != nil {
-		return err
+		return nil, err
 	}
-	MainDB = &DBManager{db: db}
-	return nil
+	mainDB := &DBManager{db: db}
+	return mainDB, nil
 }
 
 // Close the database instance

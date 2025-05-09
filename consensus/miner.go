@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/nanlour/da/block"
-	"github.com/nanlour/da/db"
 	"github.com/nanlour/da/ecdsa_da"
 	"github.com/nanlour/da/vdf_go"
 )
@@ -52,7 +51,7 @@ func (bc *BlockChain) mine() {
 			for {
 				select {
 				case <-ticker.C:
-					latestTipHash, err := db.MainDB.GetTipHash()
+					latestTipHash, err := bc.mainDB.GetTipHash()
 					if err != nil {
 						log.Printf("Error checking tip hash: %v", err)
 						continue

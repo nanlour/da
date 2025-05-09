@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/nanlour/da/block"
-	"github.com/nanlour/da/db"
 )
 
 type TransactionPool struct {
@@ -31,14 +30,14 @@ func (bc *BlockChain) DoTxn(tx *block.Transaction) error {
 		return nil
 	}
 
-	bfrom, _ := db.MainDB.GetAccountBalance(&tx.FromAddress)
+	bfrom, _ := bc.mainDB.GetAccountBalance(&tx.FromAddress)
 	if bfrom < tx.Amount {
 		return nil
 	}
-	bto, _ := db.MainDB.GetAccountBalance(&tx.ToAddress)
+	bto, _ := bc.mainDB.GetAccountBalance(&tx.ToAddress)
 
-	db.MainDB.InsertAccountBalance(&tx.FromAddress, bfrom-tx.Amount)
-	db.MainDB.InsertAccountBalance(&tx.ToAddress, bto+tx.Amount)
+	bc.mainDB.InsertAccountBalance(&tx.FromAddress, bfrom-tx.Amount)
+	bc.mainDB.InsertAccountBalance(&tx.ToAddress, bto+tx.Amount)
 
 	return nil
 }
@@ -48,14 +47,14 @@ func (bc *BlockChain) UNDoTxn(tx *block.Transaction) error {
 		return nil
 	}
 
-	bfrom, _ := db.MainDB.GetAccountBalance(&tx.FromAddress)
+	bfrom, _ := bc.mainDB.GetAccountBalance(&tx.FromAddress)
 	if bfrom < tx.Amount {
 		return nil
 	}
-	bto, _ := db.MainDB.GetAccountBalance(&tx.ToAddress)
+	bto, _ := bc.mainDB.GetAccountBalance(&tx.ToAddress)
 
-	db.MainDB.InsertAccountBalance(&tx.FromAddress, bfrom+tx.Amount)
-	db.MainDB.InsertAccountBalance(&tx.ToAddress, bto-tx.Amount)
+	bc.mainDB.InsertAccountBalance(&tx.FromAddress, bfrom+tx.Amount)
+	bc.mainDB.InsertAccountBalance(&tx.ToAddress, bto-tx.Amount)
 
 	return nil
 }

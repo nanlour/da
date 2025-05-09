@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"sync/atomic"
 	netRPC "net/rpc"
+	"sync/atomic"
 )
 
 // RPCServer represents the blockchain RPC server
@@ -14,7 +14,6 @@ type RPCServer struct {
 	listener  net.Listener
 	port      int
 	isRunning int32
-	
 }
 
 // NewRPCServer creates and returns a new RPCServer instance
@@ -27,13 +26,13 @@ func NewRPCServer(port int) *RPCServer {
 }
 
 // Start initializes and starts the RPC server
-func (s *RPCServer) Start() error {
+func (s *RPCServer) Start(blockchain BlockchainInterface) error {
 	if !atomic.CompareAndSwapInt32(&s.isRunning, 0, 1) {
 		return fmt.Errorf("RPC server is already running")
 	}
 
 	// Register the blockchain service
-	blockchainService := &BlockchainService{}
+	blockchainService := &BlockchainService{blockchain: blockchain}
 	if err := s.server.RegisterName("BlockchainService", blockchainService); err != nil {
 		return fmt.Errorf("failed to register BlockchainService: %v", err)
 	}

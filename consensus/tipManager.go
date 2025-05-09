@@ -9,7 +9,6 @@ import (
 
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/nanlour/da/block"
-	"github.com/nanlour/da/db"
 )
 
 func (bc *BlockChain) TipManager() {
@@ -61,7 +60,7 @@ func (bc *BlockChain) processNewBlock(newBlock *block.Block, isLocal bool) error
 	}
 
 	// Get current tip
-	tipHash, err := db.MainDB.GetTipHash()
+	tipHash, err := bc.mainDB.GetTipHash()
 	if err != nil {
 		return fmt.Errorf("failed to get current tip: %w", err)
 	}
@@ -72,8 +71,8 @@ func (bc *BlockChain) processNewBlock(newBlock *block.Block, isLocal bool) error
 		log.Printf("Block %x extends the main chain to height %d\n", blockHash, newBlock.Height)
 		bc.DoTxn(&newBlock.Txn)
 
-		err := db.MainDB.InsertHashBlock(&blockHash, newBlock)
-		err = db.MainDB.InsertTipHash(&blockHash)
+		err := bc.mainDB.InsertHashBlock(&blockHash, newBlock)
+		err = bc.mainDB.InsertTipHash(&blockHash)
 
 		bc.P2PNode.BroadcastBlock(newBlock)
 		return err
@@ -82,7 +81,7 @@ func (bc *BlockChain) processNewBlock(newBlock *block.Block, isLocal bool) error
 	// Potential fork detected - need to determine the longest chain
 	log.Printf("Potential fork detected at height %d, resolving...\n", newBlock.Height)
 
-	tipBlock, err := db.MainDB.GetHashBlock(tipHash)
+	tipBlock, err := bc.mainDB.GetHashBlock(tipHash)
 	if err != nil {
 		return fmt.Errorf("failed to get current tip: %w", err)
 	}

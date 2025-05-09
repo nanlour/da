@@ -4,19 +4,28 @@ import (
 	"errors"
 
 	"github.com/nanlour/da/block"
-	"github.com/nanlour/da/db"
 )
 
 // BlockchainService defines the RPC methods for blockchain interaction
-type BlockchainService struct{}
+type BlockchainService struct {
+	blockchain BlockchainInterface
+}
+
+type BlockchainInterface interface {
+	GetBlockByHash(hash []byte) (*block.Block, error)
+	GetTipBlock() (*block.Block, error)
+	GetAddress() ([32]byte, error)
+	GetAccountBalance(address *[32]byte) (float64, error)
+	SendTxn(Txn *block.Transaction) error
+}
 
 func (s *BlockchainService) GetTip(args *struct{}, reply *[32]byte) error {
-	tip, err := db.MainDB.GetTipHash()
+	TipBlock, err := s.blockchain.GetTipBlock()
 	if err != nil {
 		return err
 	}
 	var hashArray [32]byte
-	copy(hashArray[:], tip)
+	hashArray = TipBlock.Hash()
 
 	// Assign to the reply pointer
 	*reply = hashArray
@@ -26,7 +35,7 @@ func (s *BlockchainService) GetTip(args *struct{}, reply *[32]byte) error {
 
 func (s *BlockchainService) GetBlockByHash(hash [32]byte, reply *block.Block) error {
 	// Get block head data from database
-	blockHead, err := db.MainDB.GetHashBlock(hash[:])
+	blockHead, err := s.blockchain.GetBlockByHash(hash[:])
 	if err != nil {
 		return err
 	}
@@ -44,7 +53,7 @@ func (s *BlockchainService) GetBlockByHash(hash [32]byte, reply *block.Block) er
 
 func (s *BlockchainService) GetBalanceByAddress(address [32]byte, reply *float64) error {
 	// Get balance from database
-	balance, err := db.MainDB.GetAccountBalance(&address)
+	balance, err := s.blockchain.GetAccountBalance(&address)
 	if err != nil {
 		return err
 	}

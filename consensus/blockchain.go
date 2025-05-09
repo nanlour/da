@@ -23,7 +23,8 @@ type Config struct {
 	MiningDifficulty uint64
 	DbPath           string
 	RPCPort          int
-	ListenAddr       string
+	P2PListenAddr    string
+	BootstrapPeer    []string
 	InitStake        map[[32]byte]float64
 	StakeSum         float64
 	InitBank         map[[32]byte]float64
@@ -36,6 +37,7 @@ type BlockChain struct {
 	MiningChan chan *block.Block // Channel for newly mined blocks
 	P2PChan    chan *block.Block // Channel for blocks received via P2P
 	TxnPool    TransactionPool
+	mainDB     *db.DBManager
 }
 
 var (
@@ -62,55 +64,56 @@ func (bc *BlockChain) SetConfig(config *Config) {
 }
 
 func (bc *BlockChain) Init() error {
-	err := db.InitialDB(bc.NodeConfig.DbPath)
+	dbmanager, err := db.InitialDB(bc.NodeConfig.DbPath)
 	if err != nil {
 		return err
 	}
-
-	bc.RPCserver = rpc.NewRPCServer(bc.NodeConfig.RPCPort)
-	bc.RPCserver.Start()
-
-	bc.P2PNode, err = p2p.NewService(bc.NodeConfig.ListenAddr, bc)
-	if err != nil {
-		return err
-	}
+	bc.mainDB = dbmanager
 
 	bc.P2PChan = make(chan *block.Block, 100)
 	bc.MiningChan = make(chan *block.Block, 10)
 
 	// initila db
 	for address, balance := range bc.NodeConfig.InitBank {
-		db.MainDB.InsertAccountBalance(&address, balance)
+		bc.mainDB.InsertAccountBalance(&address, balance)
 	}
 
 	gBHash := genesisBlock.Hash()
-	db.MainDB.InsertTipHash(&gBHash)
-	db.MainDB.InsertHashBlock(&gBHash, &genesisBlock)
+	bc.mainDB.InsertTipHash(&gBHash)
+	bc.mainDB.InsertHashBlock(&gBHash, &genesisBlock)
 
-    var wg sync.WaitGroup
-    wg.Add(2)
-    
-    // Start mine
-    go func() {
-        defer wg.Done()
-        bc.mine()
-    }()
-    
-    go func() {
-        defer wg.Done()
-        bc.TipManager()
-    }()
-    
-    return nil
+	bc.RPCserver = rpc.NewRPCServer(bc.NodeConfig.RPCPort)
+	bc.RPCserver.Start(bc)
+
+	bc.P2PNode, err = p2p.NewService(bc.NodeConfig.P2PListenAddr, bc)
+	if err != nil {
+		return err
+	}
+
+	for _, addr := range bc.NodeConfig.BootstrapPeer {
+		bc.P2PNode.AddBootstrapPeer(addr)
+	}
+	bc.P2PNode.Start()
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	// Start mine
+	go func() {
+		defer wg.Done()
+		bc.mine()
+	}()
+
+	go func() {
+		defer wg.Done()
+		bc.TipManager()
+	}()
+
+	return nil
 }
 
 func (bc *BlockChain) Stop() error {
 	var lastErr error
-
-	// Close the database
-	if err := db.MainDB.Close(); err != nil {
-		lastErr = err
-	}
 
 	// Stop RPC server
 	if err := bc.RPCserver.Stop(); err != nil {
@@ -119,6 +122,11 @@ func (bc *BlockChain) Stop() error {
 
 	// Stop P2P node
 	if err := bc.P2PNode.Stop(); err != nil {
+		lastErr = err
+	}
+
+	// Close the database
+	if err := bc.mainDB.Close(); err != nil {
 		lastErr = err
 	}
 
@@ -143,16 +151,29 @@ func (bc *BlockChain) AddTxn(txn *block.Transaction) error {
 
 func (bc *BlockChain) GetBlockByHash(hash []byte) (*block.Block, error) {
 	// Retrieve block from database using hash
-	return db.MainDB.GetHashBlock(hash)
+	return bc.mainDB.GetHashBlock(hash)
 }
 
 func (bc *BlockChain) GetTipBlock() (*block.Block, error) {
 	// First get the hash of the tip block
-	tipHash, err := db.MainDB.GetTipHash()
+	tipHash, err := bc.mainDB.GetTipHash()
 	if err != nil {
 		return nil, err
 	}
 
 	// Then retrieve the block using the tip hash
-	return db.MainDB.GetHashBlock(tipHash)
+	return bc.mainDB.GetHashBlock(tipHash)
+}
+
+func (bc *BlockChain) GetAddress() ([32]byte, error) {
+	return bc.NodeConfig.ID.Address, nil
+}
+
+func (bc *BlockChain) SendTxn(txn *block.Transaction) error {
+	bc.TxnPool.AddTransaction(txn.Height, txn)
+	return bc.P2PNode.BroadcastTransaction(txn)
+}
+
+func (bc *BlockChain) GetAccountBalance(address *[32]byte) (float64, error) {
+	return bc.mainDB.GetAccountBalance(address)
 }

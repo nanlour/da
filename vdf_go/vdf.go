@@ -1,7 +1,7 @@
 package vdf_go
 
 import (
-    "sync/atomic"
+	"sync/atomic"
 )
 
 // VDF is the struct holding necessary state for a hash chain delay function.
@@ -10,7 +10,7 @@ type VDF struct {
 	input      [32]byte
 	output     [516]byte
 	outputChan chan [516]byte
-	finished   int32 
+	finished   int32
 }
 
 // size of long integers in quadratic function group

@@ -29,9 +29,9 @@ type Service struct {
 // BlockchainInterface defines the methods required from the blockchain
 type BlockchainInterface interface {
 	AddBlock(block *block.Block) error
-	AddTxn(block *block.Transaction) error
+	AddTxn(txn *block.Transaction) error
 	GetBlockByHash(hash []byte) (*block.Block, error)
-	GetTipBlock() (*block.Block, error)    
+	GetTipBlock() (*block.Block, error)
 }
 
 // NewService creates and initializes a new P2P service
