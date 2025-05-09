@@ -16,7 +16,13 @@ type BlockchainInterface interface {
 	GetTipBlock() (*block.Block, error)
 	GetAddress() ([32]byte, error)
 	GetAccountBalance(address *[32]byte) (float64, error)
-	SendTxn(Txn *block.Transaction) error
+	SendTxn(dest [32]byte, amount float64) error
+}
+
+// SendTxnArgs defines parameters for the SendTxn RPC method
+type SendTxnArgs struct {
+	Destination [32]byte
+	Amount      float64
 }
 
 func (s *BlockchainService) GetTip(args *struct{}, reply *[32]byte) error {
@@ -61,5 +67,26 @@ func (s *BlockchainService) GetBalanceByAddress(address [32]byte, reply *float64
 	// Set the reply value
 	*reply = balance
 
+	return nil
+}
+
+func (s *BlockchainService) SendTxn(args *SendTxnArgs, reply *bool) error {
+	// Call the blockchain's SendTxn method with the provided arguments
+	err := s.blockchain.SendTxn(args.Destination, args.Amount)
+	if err != nil {
+		return err
+	}
+
+	// Set reply to true to indicate success
+	*reply = true
+	return nil
+}
+
+func (s *BlockchainService) GetAddress(args *struct{}, reply *[32]byte) error {
+	address, err := s.blockchain.GetAddress()
+	if err != nil {
+		return err
+	}
+	*reply = address
 	return nil
 }

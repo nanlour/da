@@ -68,7 +68,7 @@ func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 	n.s.peers[pi.ID] = pi
 	n.s.peersMu.Unlock()
 
-	fmt.Printf("Connected to peer: %s\n", pi.ID.String())
+	fmt.Printf("%s Connected to peer: %s\n", n.s.host.ID(), pi.ID.String())
 }
 
 // setupDHT initializes the DHT for peer discovery

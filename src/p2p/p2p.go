@@ -9,6 +9,7 @@ import (
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/p2p/security/noise"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/nanlour/da/src/block"
 )
@@ -26,9 +27,14 @@ type Service struct {
 	bootstrapPeers []multiaddr.Multiaddr
 }
 
+type P2PBlock struct {
+	Block block.Block
+	Sender string
+}
+
 // BlockchainInterface defines the methods required from the blockchain
 type BlockchainInterface interface {
-	AddBlock(block *block.Block) error
+	AddBlock(block *P2PBlock) error
 	AddTxn(txn *block.Transaction) error
 	GetBlockByHash(hash []byte) (*block.Block, error)
 	GetTipBlock() (*block.Block, error)
@@ -48,6 +54,7 @@ func NewService(listenAddr string, blockchain BlockchainInterface) (*Service, er
 	// Create a new libp2p Host
 	h, err := libp2p.New(
 		libp2p.ListenAddrs(addr),
+		libp2p.Security("/noise", noise.New),
 	)
 	if err != nil {
 		cancel()

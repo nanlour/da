@@ -7,6 +7,7 @@ import (
 
 	"github.com/nanlour/da/src/block"
 	"github.com/nanlour/da/src/db"
+	"github.com/nanlour/da/src/ecdsa_da"
 	"github.com/nanlour/da/src/p2p"
 	"github.com/nanlour/da/src/rpc"
 )
@@ -15,6 +16,11 @@ type Account struct {
 	PrvKey  ecdsa.PrivateKey
 	PubKey  ecdsa.PublicKey
 	Address [32]byte
+}
+
+type Chain struct {
+	Hash    [32]byte
+	PrvHash [32]byte
 }
 
 type Config struct {
@@ -34,10 +40,11 @@ type BlockChain struct {
 	RPCserver  *rpc.RPCServer
 	P2PNode    *p2p.Service
 	NodeConfig *Config
-	MiningChan chan *block.Block // Channel for newly mined blocks
-	P2PChan    chan *block.Block // Channel for blocks received via P2P
+	MiningChan chan *block.Block  // Channel for newly mined blocks
+	P2PChan    chan *p2p.P2PBlock // Channel for blocks received via P2P
 	TxnPool    TransactionPool
 	mainDB     *db.DBManager
+	MyChain    []*Chain
 }
 
 var (
@@ -70,7 +77,13 @@ func (bc *BlockChain) Init() error {
 	}
 	bc.mainDB = dbmanager
 
-	bc.P2PChan = make(chan *block.Block, 100)
+	bc.MyChain = []*Chain{
+		{
+			Hash: genesisBlock.Hash(),
+		},
+	}
+
+	bc.P2PChan = make(chan *p2p.P2PBlock, 100)
 	bc.MiningChan = make(chan *block.Block, 10)
 
 	// initila db
@@ -133,7 +146,7 @@ func (bc *BlockChain) Stop() error {
 	return lastErr
 }
 
-func (bc *BlockChain) AddBlock(block *block.Block) error {
+func (bc *BlockChain) AddBlock(block *p2p.P2PBlock) error {
 	select {
 	case bc.P2PChan <- block:
 		// Message sent successfully
@@ -169,7 +182,18 @@ func (bc *BlockChain) GetAddress() ([32]byte, error) {
 	return bc.NodeConfig.ID.Address, nil
 }
 
-func (bc *BlockChain) SendTxn(txn *block.Transaction) error {
+func (bc *BlockChain) SendTxn(dest [32]byte, amount float64) error {
+	tip, _ := bc.GetTipBlock()
+	txn := &block.Transaction{
+		FromAddress: bc.NodeConfig.ID.Address,
+		ToAddress:   dest,
+		Amount:      amount,
+		Height:      tip.Height + 2,
+		PublicKey:   ecdsa_da.PublicKeyToBytes(&bc.NodeConfig.ID.PubKey),
+	}
+
+	txn.Sign(&bc.NodeConfig.ID.PrvKey)
+
 	bc.TxnPool.AddTransaction(txn.Height, txn)
 	return bc.P2PNode.BroadcastTransaction(txn)
 }

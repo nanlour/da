@@ -115,8 +115,9 @@ func (pm *PubSubManager) processBlockMessages() {
 		// Get the sender's peer ID
 		sender := msg.ReceivedFrom.String()
 
-		var block block.Block
-		if err := json.Unmarshal(msg.Data, &block); err != nil {
+		var block P2PBlock
+		block.Sender = sender
+		if err := json.Unmarshal(msg.Data, &block.Block); err != nil {
 			fmt.Printf("Error unmarshaling block from %s: %s\n", sender, err)
 			continue
 		}
@@ -127,7 +128,7 @@ func (pm *PubSubManager) processBlockMessages() {
 			continue
 		}
 
-		fmt.Printf("Received and added new block from %s: %x\n", sender, block)
+		fmt.Printf("Received and added new block from %s: %x\n", sender, block.Block.Hash())
 	}
 }
 

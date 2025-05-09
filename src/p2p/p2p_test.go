@@ -25,15 +25,15 @@ func NewMockBlockchain() *MockBlockchain {
 	}
 }
 
-func (m *MockBlockchain) AddBlock(b *block.Block) error {
-	hash := b.Hash()
+func (m *MockBlockchain) AddBlock(b *P2PBlock) error {
+	hash := b.Block.Hash()
 
 	m.blocksMutex.Lock()
 	defer m.blocksMutex.Unlock()
 
-	m.blocks[hash] = b
-	if int64(b.Height) > m.tipHeight {
-		m.tipHeight = int64(b.Height)
+	m.blocks[hash] = &b.Block
+	if int64(b.Block.Height) > m.tipHeight {
+		m.tipHeight = int64(b.Block.Height)
 		m.tipHash = hash
 	}
 	return nil
@@ -147,7 +147,7 @@ func TestProtocolHandlers(t *testing.T) {
 			Amount: 100,
 		},
 	}
-	mockBC2.AddBlock(testBlock)
+	mockBC2.AddBlock(&P2PBlock{Block: *testBlock, Sender: ""})
 	testBlockHash := testBlock.Hash()
 
 	testBlock2 := &block.Block{
@@ -156,7 +156,7 @@ func TestProtocolHandlers(t *testing.T) {
 			Amount: 101,
 		},
 	}
-	mockBC2.AddBlock(testBlock2)
+	mockBC2.AddBlock(&P2PBlock{Block: *testBlock2, Sender: ""})
 
 	// Create two P2P services
 	service1, err := NewService("/ip4/127.0.0.1/tcp/0", mockBC1)
