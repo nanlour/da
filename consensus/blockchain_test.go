@@ -23,10 +23,10 @@ func TestMinerCreatesValidBlock(t *testing.T) {
 
 	// Setup genesis block in the database
 	genesisHash := genesisBlock.Hash()
-	if err := db.MainDB.InsertHashBlock(genesisHash[:], genesisBlock); err != nil {
+	if err := db.MainDB.InsertHashBlock(&genesisHash, &genesisBlock); err != nil {
 		t.Fatalf("Failed to insert genesis block: %v", err)
 	}
-	if err := db.MainDB.InsertTipHash(genesisHash[:]); err != nil {
+	if err := db.MainDB.InsertTipHash(&genesisHash); err != nil {
 		t.Fatalf("Failed to set genesis as tip: %v", err)
 	}
 

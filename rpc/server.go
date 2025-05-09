@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync/atomic"
 	netRPC "net/rpc"
 )
 
@@ -12,7 +13,8 @@ type RPCServer struct {
 	server    *netRPC.Server
 	listener  net.Listener
 	port      int
-	isRunning bool
+	isRunning int32
+	
 }
 
 // NewRPCServer creates and returns a new RPCServer instance
@@ -20,13 +22,13 @@ func NewRPCServer(port int) *RPCServer {
 	return &RPCServer{
 		server:    netRPC.NewServer(),
 		port:      port,
-		isRunning: false,
+		isRunning: 0,
 	}
 }
 
 // Start initializes and starts the RPC server
 func (s *RPCServer) Start() error {
-	if s.isRunning {
+	if !atomic.CompareAndSwapInt32(&s.isRunning, 0, 1) {
 		return fmt.Errorf("RPC server is already running")
 	}
 
@@ -43,7 +45,6 @@ func (s *RPCServer) Start() error {
 		return fmt.Errorf("failed to start RPC listener on port %d: %v", s.port, err)
 	}
 
-	s.isRunning = true
 	log.Printf("RPC server started on port %d", s.port)
 
 	// Accept connections in a goroutine
@@ -54,11 +55,11 @@ func (s *RPCServer) Start() error {
 
 // acceptConnections handles incoming RPC connections
 func (s *RPCServer) acceptConnections() {
-	for s.isRunning {
+	for atomic.LoadInt32(&s.isRunning) == 1 {
 		conn, err := s.listener.Accept()
 		if err != nil {
 			// If server is stopping, this is expected
-			if !s.isRunning {
+			if atomic.LoadInt32(&s.isRunning) == 0 {
 				return
 			}
 			log.Printf("Error accepting connection: %v", err)
@@ -72,11 +73,10 @@ func (s *RPCServer) acceptConnections() {
 
 // Stop shuts down the RPC server
 func (s *RPCServer) Stop() error {
-	if !s.isRunning {
+	if !atomic.CompareAndSwapInt32(&s.isRunning, 1, 0) {
 		return fmt.Errorf("RPC server is not running")
 	}
 
-	s.isRunning = false
 	if err := s.listener.Close(); err != nil {
 		return fmt.Errorf("error stopping RPC server: %v", err)
 	}

@@ -54,17 +54,13 @@ func (manager *DBManager) Insert(key, value []byte) error {
 	return manager.db.Put(key, value, nil)
 }
 
-func (manager *DBManager) BatchInsert(batch *leveldb.Batch) error {
-	return manager.db.Write(batch, nil)
-}
-
 // Get retrieves a value by key from the database
 func (manager *DBManager) Get(key []byte) ([]byte, error) {
 	return manager.db.Get(key, nil)
 }
 
 // Account Balance functions (float64)
-func (manager *DBManager) GetAccountBalance(address []byte) (float64, error) {
+func (manager *DBManager) GetAccountBalance(address *[32]byte) (float64, error) {
 	key := PrefixKey(accountBalancePrefix, address[:])
 	data, err := manager.Get(key)
 	if err != nil {
@@ -75,7 +71,7 @@ func (manager *DBManager) GetAccountBalance(address []byte) (float64, error) {
 	return math.Float64frombits(bits), nil
 }
 
-func (manager *DBManager) InsertAccountBalance(address []byte, balance float64) error {
+func (manager *DBManager) InsertAccountBalance(address *[32]byte, balance float64) error {
 	key := PrefixKey(accountBalancePrefix, address[:])
 
 	buf := make([]byte, 8)
@@ -107,7 +103,7 @@ func (manager *DBManager) GetHashBlock(hash []byte) (*block.Block, error) {
 }
 
 // InsertHashBlock stores a Block for a given block hash
-func (manager *DBManager) InsertHashBlock(hash []byte, block *block.Block) error {
+func (manager *DBManager) InsertHashBlock(hash *[32]byte, block *block.Block) error {
 	// Create prefixed key
 	key := PrefixKey(hashBlockPerfix, hash[:])
 
@@ -127,6 +123,6 @@ func (manager *DBManager) GetTipHash() ([]byte, error) {
 	return manager.Get([]byte{tipHash})
 }
 
-func (manager *DBManager) InsertTipHash(hash []byte) error {
-	return manager.Insert([]byte{tipHash}, hash)
+func (manager *DBManager) InsertTipHash(hash *[32]byte) error {
+	return manager.Insert([]byte{tipHash}, hash[:])
 }

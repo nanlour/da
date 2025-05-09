@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/nanlour/da/db"
-	"github.com/syndtr/goleveldb/leveldb"
 )
 
 func TestDBManager(t *testing.T) {
@@ -35,21 +34,6 @@ func TestDBManager(t *testing.T) {
 	}
 	if string(retrievedValue) != string(value) {
 		t.Errorf("Expected value %s, got %s", value, retrievedValue)
-	}
-
-	// Test BatchInsert
-	batch := new(leveldb.Batch)
-	batch.Put([]byte("batchKey1"), []byte("batchValue1"))
-	batch.Put([]byte("batchKey2"), []byte("batchValue2"))
-	err = db.MainDB.BatchInsert(batch)
-	if err != nil {
-		t.Errorf("BatchInsert failed: %v", err)
-	}
-
-	// Verify BatchInsert
-	retrievedBatchValue, err := db.MainDB.Get([]byte("batchKey1"))
-	if err != nil || string(retrievedBatchValue) != "batchValue1" {
-		t.Errorf("BatchInsert verification failed for batchKey1")
 	}
 }
 

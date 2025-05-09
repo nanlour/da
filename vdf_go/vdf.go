@@ -1,12 +1,16 @@
 package vdf_go
 
+import (
+    "sync/atomic"
+)
+
 // VDF is the struct holding necessary state for a hash chain delay function.
 type VDF struct {
 	difficulty int
 	input      [32]byte
 	output     [516]byte
 	outputChan chan [516]byte
-	finished   bool
+	finished   int32 
 }
 
 // size of long integers in quadratic function group
@@ -30,7 +34,7 @@ func (vdf *VDF) GetOutputChannel() chan [516]byte {
 // Execute runs the VDF until it's finished and put the result into output channel.
 // currently on i7-6700K, it takes about 14 seconds when iteration is set to 10000
 func (vdf *VDF) Execute(stop <-chan struct{}) {
-	vdf.finished = false
+	atomic.StoreInt32(&vdf.finished, 0)
 
 	yBuf, proofBuf := GenerateVDFWithStopChan(vdf.input[:], vdf.difficulty, sizeInBits, stop)
 
@@ -41,7 +45,7 @@ func (vdf *VDF) Execute(stop <-chan struct{}) {
 		vdf.outputChan <- vdf.output
 	}()
 
-	vdf.finished = true
+	atomic.StoreInt32(&vdf.finished, 1)
 }
 
 // Verify runs the verification of generated proof
@@ -52,7 +56,7 @@ func (vdf *VDF) Verify(proof [516]byte) bool {
 
 // IsFinished returns whether the vdf execution is finished or not.
 func (vdf *VDF) IsFinished() bool {
-	return vdf.finished
+	return atomic.LoadInt32(&vdf.finished) == 1
 }
 
 // GetOutput returns the vdf output, which can be bytes of 0s is the vdf is not finished.

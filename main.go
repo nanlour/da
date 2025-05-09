@@ -1,7 +1,10 @@
 package da
 
-import ()
+import (
+	"github.com/nanlour/da/consensus"
+)
 
 func main() {
-
+	bc := consensus.BlockChain{}
+	bc.Init()
 }

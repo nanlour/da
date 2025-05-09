@@ -63,19 +63,19 @@ func TestBlockchainService(t *testing.T) {
 	defer db.MainDB.Close()
 
 	// Create test data
-	testBlockHash := make([]byte, 32)
-	copy(testBlockHash, []byte("testblockhash12345678901234567890"))
+	testBlockHash := [32]byte{}
+	copy(testBlockHash[:], []byte("testblockhash12345678901234567890"))
 
-	testAddr := make([]byte, 32)
-	copy(testAddr, []byte("testaddress12345678901234567890"))
+	var testAddr [32]byte
+	copy(testAddr[:], []byte("testaddress12345678901234567890"))
 
-	err = db.MainDB.InsertTipHash(testBlockHash)
+	err = db.MainDB.InsertTipHash(&testBlockHash)
 	if err != nil {
 		t.Fatalf("Failed to insert test tip hash: %v", err)
 	}
 
 	testBalance := 100.5
-	err = db.MainDB.InsertAccountBalance(testAddr, testBalance)
+	err = db.MainDB.InsertAccountBalance(&testAddr, testBalance)
 	if err != nil {
 		t.Fatalf("Failed to insert test account balance: %v", err)
 	}
@@ -89,7 +89,7 @@ func TestBlockchainService(t *testing.T) {
 	testBlockData.Proof = [516]byte{13, 14, 15}
 
 	// Insert the test block
-	err = db.MainDB.InsertHashBlock(testBlockHash, &testBlockData)
+	err = db.MainDB.InsertHashBlock(&testBlockHash, &testBlockData)
 	if err != nil {
 		t.Fatalf("Failed to insert test block: %v", err)
 	}
@@ -123,7 +123,7 @@ func TestBlockchainService(t *testing.T) {
 		}
 
 		var expectedHash [32]byte
-		copy(expectedHash[:], testBlockHash)
+		copy(expectedHash[:], testBlockHash[:])
 
 		if tip != expectedHash {
 			t.Errorf("GetTip returned wrong hash: got %x, want %x", tip, expectedHash)
@@ -133,10 +133,8 @@ func TestBlockchainService(t *testing.T) {
 	// Test 2: GetBalanceByAddress RPC call
 	t.Run("GetBalanceByAddress", func(t *testing.T) {
 		var balance float64
-		var addrArray [32]byte
-		copy(addrArray[:], testAddr)
 
-		err = client.Call("BlockchainService.GetBalanceByAddress", addrArray, &balance)
+		err = client.Call("BlockchainService.GetBalanceByAddress", testAddr, &balance)
 		if err != nil {
 			t.Errorf("Error calling GetBalanceByAddress: %v", err)
 		}
@@ -149,7 +147,7 @@ func TestBlockchainService(t *testing.T) {
 	t.Run("GetBlockByHash", func(t *testing.T) {
 		var blockData block.Block
 		var hashArray [32]byte
-		copy(hashArray[:], testBlockHash)
+		copy(hashArray[:], testBlockHash[:])
 
 		err = client.Call("BlockchainService.GetBlockByHash", hashArray, &blockData)
 		if err != nil {

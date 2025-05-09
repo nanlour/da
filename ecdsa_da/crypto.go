@@ -148,5 +148,13 @@ func Difficulty(signature []byte, StakeSum float64, StakeMine float64, MiningDif
 	rm := math.Log(float64(value) / float64(^uint64(0)))
 	t := math.Log(1 - float64(StakeMine/(StakeSum*float64(MiningDifficulty))))
 
-	return 100 + uint64(rm/t)
+	diff := uint64(rm/t)
+
+	// Ensure diff is smaller than 10 * MiningDifficulty
+    maxDiff := 10 * MiningDifficulty
+    if diff > maxDiff {
+        diff = maxDiff
+    }
+
+    return 100 + diff
 }

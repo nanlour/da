@@ -17,24 +17,13 @@ func (bc *BlockChain) mine() {
 
 	// Run the mining loop indefinitely
 	for {
-		// Get the current tip hash and block
-		tipHash, err := db.MainDB.GetTipHash()
-		if err != nil {
-			log.Printf("Failed to get tip hash: %v, retrying in 5s", err)
-			time.Sleep(5 * time.Second)
-			continue
-		}
+		tipBlock, err := bc.GetTipBlock()
 
-		tipBlock, err := db.MainDB.GetHashBlock(tipHash)
-		if err != nil {
-			log.Printf("Failed to get tip block: %v, retrying in 5s", err)
-			time.Sleep(5 * time.Second)
-			continue
-		}
+		tipHash := tipBlock.Hash()
 
 		// Create a new block to mine
 		newBlock := &block.Block{
-			PreHash:        bytesToHash32(tipHash),
+			PreHash:        tipHash,
 			Height:         tipBlock.Height + 1,
 			EpochBeginHash: genesisBlock.Hash(), // Use genesisBlock for now
 			Txn:            bc.selectTransaction(tipBlock.Height + 1),
@@ -57,7 +46,7 @@ func (bc *BlockChain) mine() {
 
 		// Set up goroutine to monitor for tip changes
 		go func(currentTipHash []byte, stopMining func()) {
-			ticker := time.NewTicker(500 * time.Millisecond)
+			ticker := time.NewTicker(100 * time.Millisecond)
 			defer ticker.Stop()
 
 			for {
@@ -77,7 +66,7 @@ func (bc *BlockChain) mine() {
 					}
 				}
 			}
-		}(tipHash, func() {
+		}(tipHash[:], func() {
 			close(stopChan)
 			cancel()
 		})
@@ -111,7 +100,7 @@ func (bc *BlockChain) mine() {
 		cancel()
 
 		// Short delay before starting next mining cycle
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 	}
 }
 

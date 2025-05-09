@@ -55,26 +55,42 @@ func (bc *BlockChain) processNewBlock(newBlock *block.Block, isLocal bool) error
 	// Calculate block hash
 	blockHash := newBlock.Hash()
 
+	if !bc.VerifyBlock(newBlock) {
+		log.Printf("Invalid Block %x\n", blockHash)
+		return nil
+	}
+
 	// Get current tip
 	tipHash, err := db.MainDB.GetTipHash()
 	if err != nil {
 		return fmt.Errorf("failed to get current tip: %w", err)
 	}
 
-	// Store the block in the database regardless of whether it's on the main chain
-	if err := db.MainDB.InsertHashBlock(blockHash[:], newBlock); err != nil {
-		return fmt.Errorf("failed to store block: %w", err)
-	}
-
 	// Check if this block builds on our current tip
 	if bytes.Equal(newBlock.PreHash[:], tipHash) {
 		// This block extends our current main chain
 		log.Printf("Block %x extends the main chain to height %d\n", blockHash, newBlock.Height)
-		return db.MainDB.InsertTipHash(blockHash[:])
+		bc.DoTxn(&newBlock.Txn)
+
+		err := db.MainDB.InsertHashBlock(&blockHash, newBlock)
+		err = db.MainDB.InsertTipHash(&blockHash)
+
+		bc.P2PNode.BroadcastBlock(newBlock)
+		return err
 	}
 
 	// Potential fork detected - need to determine the longest chain
 	log.Printf("Potential fork detected at height %d, resolving...\n", newBlock.Height)
+
+	tipBlock, err := db.MainDB.GetHashBlock(tipHash)
+	if err != nil {
+		return fmt.Errorf("failed to get current tip: %w", err)
+	}
+
+	if newBlock.Height <= tipBlock.Height {
+		log.Printf("Potential fork height too low, current Tip at %d\n", tipBlock.Height)
+		return nil
+	}
 
 	return nil
 }

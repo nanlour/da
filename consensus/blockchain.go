@@ -3,6 +3,7 @@ package consensus
 import (
 	"crypto/ecdsa"
 	"errors"
+	"sync"
 
 	"github.com/nanlour/da/block"
 	"github.com/nanlour/da/db"
@@ -44,14 +45,14 @@ var (
 		Amount:      0,          // No amount transferred
 	}
 
-	genesisBlock = &block.Block{
+	genesisBlock = block.Block{
 		PreHash:        [32]byte{},                                            // No previous block
 		Height:         0,                                                     // Height is 0
 		EpochBeginHash: [32]byte{'H', 'E', 'L', 'L', 'O', ',', ' ', 'D', 'A'}, // Initial epoch hash
 		Txn:            genesisTx,
 		Signature:      [64]byte{'M', 'A', 'D', 'E', ' ', 'B', 'Y', ' ', 'R', 'O', 'N', 'G', 'W', 'A', 'N', 'G'},
 		PublicKey:      [64]byte{},
-		Proof:          [516]byte{'T', 'h', 'e', 'r', 'e', ' ', 'i', 's', ' ', 'a', 'l', 'w', 'a', 'y', 's', ' ', 's', 'o', 'm', 'e', ' ', 't', 'h', 'a', 't', ' ', 'y', 'o', 'u', ' ', 'c', 'a', 'n', 'n', 'o', 't', ' ', 'p', 'r', 'o', 'o', 'f'},
+		Proof:          [516]byte{'T', 'h', 'e', 'r', 'e', ' ', 'i', 's', ' ', 'a', 'l', 'w', 'a', 'y', 's', ' ', 's', 'o', 'm', 'e', 't', 'h', 'i', 'n', 'g', ' ', 't', 'h', 'a', 't', ' ', 'y', 'o', 'u', ' ', 'c', 'a', 'n', 'n', 'o', 't', ' ', 'p', 'r', 'o', 'o', 'f'},
 	}
 )
 
@@ -77,10 +78,30 @@ func (bc *BlockChain) Init() error {
 	bc.P2PChan = make(chan *block.Block, 100)
 	bc.MiningChan = make(chan *block.Block, 10)
 
-	// Start mine
-	go bc.mine()
+	// initila db
+	for address, balance := range bc.NodeConfig.InitBank {
+		db.MainDB.InsertAccountBalance(&address, balance)
+	}
 
-	return nil
+	gBHash := genesisBlock.Hash()
+	db.MainDB.InsertTipHash(&gBHash)
+	db.MainDB.InsertHashBlock(&gBHash, &genesisBlock)
+
+    var wg sync.WaitGroup
+    wg.Add(2)
+    
+    // Start mine
+    go func() {
+        defer wg.Done()
+        bc.mine()
+    }()
+    
+    go func() {
+        defer wg.Done()
+        bc.TipManager()
+    }()
+    
+    return nil
 }
 
 func (bc *BlockChain) Stop() error {

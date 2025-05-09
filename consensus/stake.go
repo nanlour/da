@@ -39,5 +39,11 @@ func (bc *BlockChain) VerifyBlock(block *block.Block) bool {
 
 	vdf := vdf_go.New(int(diff), block.HashwithoutProof())
 
+	var zeroProof [516]byte
+	if block.Proof == zeroProof {
+		return false
+	}
+
+
 	return vdf.Verify(block.Proof)
 }

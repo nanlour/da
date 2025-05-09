@@ -44,7 +44,7 @@ func (s *BlockchainService) GetBlockByHash(hash [32]byte, reply *block.Block) er
 
 func (s *BlockchainService) GetBalanceByAddress(address [32]byte, reply *float64) error {
 	// Get balance from database
-	balance, err := db.MainDB.GetAccountBalance(address[:])
+	balance, err := db.MainDB.GetAccountBalance(&address)
 	if err != nil {
 		return err
 	}
