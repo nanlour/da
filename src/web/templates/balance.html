@@ -1,0 +1,22 @@
+{{define "balance_content"}}
+<h1>Check Balance</h1>
+
+<form method="post" action="/balance">
+    <div class="form-group">
+        <label for="address">Address:</label>
+        <input type="text" id="address" name="address" required 
+               placeholder="32-byte address in hex format"
+               {{if .Address}}value="{{.Address}}"{{end}}>
+    </div>
+    
+    <button type="submit">Check Balance</button>
+</form>
+
+{{if .Success}}
+<div class="result">
+    <h3>Balance Result:</h3>
+    <p>Address: <code>{{.Address}}</code></p>
+    <p>Balance: <strong>{{.Balance}}</strong></p>
+</div>
+{{end}}
+{{end}}

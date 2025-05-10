@@ -1,0 +1,30 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain UI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/send">Send Transaction</a></li>
+                <li><a href="/balance">Check Balance</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        {{template "content" .}}
+    </main>
+    
+    <footer>
+        <p>Blockchain Demo UI</p>
+    </footer>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,38 @@
+{{define "index_content"}}
+<h1>Blockchain Explorer</h1>
+
+<section class="node-info">
+    <h2>Node Information</h2>
+    <p><strong>Your Address:</strong> <code>{{.Address}}</code></p>
+</section>
+
+<section class="blocks">
+    <h2>Recent Blocks</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Height</th>
+                <th>Hash</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Blocks}}
+            <tr>
+                <td>{{.Height}}</td>
+                <td><code>{{.Hash}}</code></td>
+                <td><code>{{.From}}</code></td>
+                <td><code>{{.To}}</code></td>
+                <td>{{.Amount}}</td>
+            </tr>
+            {{else}}
+            <tr>
+                <td colspan="5">No blocks found</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</section>
+{{end}}
