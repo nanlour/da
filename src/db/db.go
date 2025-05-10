@@ -3,6 +3,7 @@ package db
 import (
 	"bytes"
 	"encoding/binary"
+	"log"
 	"math"
 
 	"github.com/nanlour/da/src/block"
@@ -31,6 +32,7 @@ func PrefixKey(prefix byte, data []byte) []byte {
 func InitialDB(path string) (*DBManager, error) {
 	db, err := leveldb.OpenFile(path, nil) // Open the database
 	if err != nil {
+		log.Fatalf("Failed to open db: %v", err)
 		return nil, err
 	}
 	mainDB := &DBManager{db: db}

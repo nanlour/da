@@ -1,0 +1,54 @@
+
+services:
+  blockchain-node-0:
+    hostname: blockchain-node-0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./configs:/app/configs
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_CONFIG=/app/configs/config0.json
+    command: ["sh", "./start.sh"]
+    networks:
+      - blockchain-net
+
+  blockchain-node-1:
+    hostname: blockchain-node-1
+    depends_on:
+      - blockchain-node-0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./configs:/app/configs
+    ports:
+      - "8081:8080"
+    environment:
+      - NODE_CONFIG=/app/configs/config1.json
+    command: ["sh", "./start.sh"]
+    networks:
+      - blockchain-net
+
+  blockchain-node-2:
+    hostname: blockchain-node-2
+    depends_on:
+      - blockchain-node-0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./configs:/app/configs
+    ports:
+      - "8082:8080"
+    environment:
+      - NODE_CONFIG=/app/configs/config2.json
+    command: ["sh", "./start.sh"]
+    networks:
+      - blockchain-net
+
+networks:
+  blockchain-net:
+    driver: bridge

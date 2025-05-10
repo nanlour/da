@@ -11,6 +11,7 @@ func main() {
 	// Define command-line flag for config path
 	configPath := flag.String("config", "", "Path to configuration file")
 	flag.Parse()
+	log.Printf("Config Path: %s", *configPath)
 
 	bc := consensus.BlockChain{}
 	config, err := consensus.LoadConfigFromFile(*configPath)

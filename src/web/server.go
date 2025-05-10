@@ -52,8 +52,8 @@ func (s *WebServer) Start() error {
 	})
 
 	// Start server
-	addr := fmt.Sprintf(":%d", s.port)
-	log.Printf("Web UI server starting on http://localhost%s", addr)
+	addr := fmt.Sprintf("0.0.0.0:%d", s.port)
+	log.Printf("Web UI server starting on http://%s", addr)
 	return http.ListenAndServe(addr, nil)
 }
 
