@@ -1,6 +1,7 @@
 package consensus
 
 import (
+	"bytes"
 	"sync"
 
 	"github.com/nanlour/da/src/block"
@@ -26,7 +27,7 @@ func (tp *TransactionPool) GetTransaction(height uint64) (*block.Transaction, bo
 }
 
 func (bc *BlockChain) DoTxn(tx *block.Transaction) error {
-	if tx.Amount == 0 {
+	if tx.Amount == 0 || bytes.Equal(tx.FromAddress[:], tx.ToAddress[:]){
 		return nil
 	}
 
@@ -43,7 +44,7 @@ func (bc *BlockChain) DoTxn(tx *block.Transaction) error {
 }
 
 func (bc *BlockChain) UNDoTxn(tx *block.Transaction) error {
-	if tx.Amount == 0 {
+	if tx.Amount == 0 || bytes.Equal(tx.FromAddress[:], tx.ToAddress[:]){
 		return nil
 	}
 

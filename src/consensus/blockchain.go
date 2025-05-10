@@ -83,6 +83,8 @@ func (bc *BlockChain) Init() error {
 		},
 	}
 
+	bc.TxnPool.txnMap = make(map[uint64]*block.Transaction)
+
 	bc.P2PChan = make(chan *p2p.P2PBlock, 100)
 	bc.MiningChan = make(chan *block.Block, 10)
 

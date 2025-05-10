@@ -52,16 +52,26 @@ func (bc *BlockChain) TipManager() {
 // processNewBlock handles a new block and resolves any forks
 // isLocal indicates if the block was mined locally or received from network
 func (bc *BlockChain) processNewBlock(newBlock *block.Block, isLocal bool, sender string) error {
+	// Get current tip
+	tipHash := bc.MyChain[len(bc.MyChain)-1].Hash
+
+	tipBlock, err := bc.mainDB.GetHashBlock(tipHash[:])
+	if err != nil {
+		return fmt.Errorf("failed to get current tip: %w", err)
+	}
+
 	// Calculate block hash
 	blockHash := newBlock.Hash()
+
+	if newBlock.Height <= tipBlock.Height {
+		log.Printf("Potential fork height too low, current Tip at %d\n", tipBlock.Height)
+		return nil
+	}
 
 	if !bc.VerifyBlock(newBlock) {
 		log.Printf("Invalid Block %x\n", blockHash)
 		return nil
 	}
-
-	// Get current tip
-	tipHash := bc.MyChain[len(bc.MyChain)-1].Hash
 
 	// Check if this block builds on our current tip
 	if bytes.Equal(newBlock.PreHash[:], tipHash[:]) {
@@ -81,16 +91,6 @@ func (bc *BlockChain) processNewBlock(newBlock *block.Block, isLocal bool, sende
 
 	// Potential fork detected - need to determine the longest chain
 	log.Printf("Potential fork detected at height %d, resolving...\n", newBlock.Height)
-
-	tipBlock, err := bc.mainDB.GetHashBlock(tipHash[:])
-	if err != nil {
-		return fmt.Errorf("failed to get current tip: %w", err)
-	}
-
-	if newBlock.Height <= tipBlock.Height {
-		log.Printf("Potential fork height too low, current Tip at %d\n", tipBlock.Height)
-		return nil
-	}
 
 	bc.checkFork(newBlock, sender)
 
