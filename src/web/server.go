@@ -1,6 +1,7 @@
 package web
 
 import (
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"html/template"
@@ -75,22 +76,25 @@ func (s *WebServer) handleHome(w http.ResponseWriter, r *http.Request) {
 
 	// Format blocks for display
 	type DisplayBlock struct {
-		Hash   string
-		Height uint64
-		From   string
-		To     string
-		Amount float64
+		Hash    string
+		Height  uint64
+		From    string
+		To      string
+		Amount  float64
+		MinedBy string // Added field for miner address
 	}
 
 	displayBlocks := make([]DisplayBlock, len(blocks))
 	for i, block := range blocks {
 		hash := block.Hash()
+		address := sha256.Sum256(block.PublicKey[:])
 		displayBlocks[i] = DisplayBlock{
-			Hash:   hex.EncodeToString(hash[:]),
-			Height: block.Height,
-			From:   hex.EncodeToString(block.Txn.FromAddress[:]),
-			To:     hex.EncodeToString(block.Txn.ToAddress[:]),
-			Amount: block.Txn.Amount,
+			Hash:    hex.EncodeToString(hash[:]),
+			Height:  block.Height,
+			From:    hex.EncodeToString(block.Txn.FromAddress[:]),
+			To:      hex.EncodeToString(block.Txn.ToAddress[:]),
+			Amount:  block.Txn.Amount,
+			MinedBy: hex.EncodeToString(address[:]),
 		}
 	}
 
