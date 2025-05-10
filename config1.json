@@ -1,0 +1,26 @@
+{
+  "id": {
+    "private_key": "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIDS2bf+z4QttchfRrn2v7PfzmLHQhcePSYbP9xIJk6tQoAoGCCqGSM49\nAwEHoUQDQgAEj0xUeaRcPvr1n0XDGe9eaazGKe5Ns6wWL88Cw2gdq2kq8WpHSi23\nvzE3+FtIF3/PTiqcL5HDHMAezGJmF98kEg==\n-----END EC PRIVATE KEY-----\n",
+    "public_key": "-----BEGIN EC PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEj0xUeaRcPvr1n0XDGe9eaazGKe5N\ns6wWL88Cw2gdq2kq8WpHSi23vzE3+FtIF3/PTiqcL5HDHMAezGJmF98kEg==\n-----END EC PUBLIC KEY-----\n",
+    "address": "fb0b8bd54dc505f5e9079dbcb0ad1407e9081fabcc42a192604644aec32acad6"
+  },
+  "stake_mine": 100,
+  "mining_difficulty": 5000,
+  "db_path": "/tmp/blockchain_network_test_1624031098/node1",
+  "rpc_port": 9001,
+  "p2p_listen_addr": "/ip4/127.0.0.1/tcp/10001",
+  "bootstrap_peer": [
+    "/ip4/127.0.0.1/tcp/10000/p2p"
+  ],
+  "init_stake": {
+    "46e5089949a012c6d0f51898b9b64bbe4c552ed11eb1123e32015f0a04838698": 100,
+    "6066299bbc958a28458ab447d0831d414a174ba5c8d6e79f3da719879bfa7bb9": 100,
+    "fb0b8bd54dc505f5e9079dbcb0ad1407e9081fabcc42a192604644aec32acad6": 100
+  },
+  "stake_sum": 300,
+  "init_bank": {
+    "46e5089949a012c6d0f51898b9b64bbe4c552ed11eb1123e32015f0a04838698": 100,
+    "6066299bbc958a28458ab447d0831d414a174ba5c8d6e79f3da719879bfa7bb9": 100,
+    "fb0b8bd54dc505f5e9079dbcb0ad1407e9081fabcc42a192604644aec32acad6": 100
+  }
+}

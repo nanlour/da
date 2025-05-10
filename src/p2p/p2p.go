@@ -28,7 +28,7 @@ type Service struct {
 }
 
 type P2PBlock struct {
-	Block block.Block
+	Block  block.Block
 	Sender string
 }
 
@@ -115,7 +115,15 @@ func (s *Service) Connect(addr string) error {
 		return err
 	}
 
-	if err := s.host.Connect(s.ctx, *addrInfo); err != nil {
+	attempt := 3
+	for range 3 {
+		attempt--
+		if err = s.host.Connect(s.ctx, *addrInfo); err == nil {
+			break
+		}
+	}
+
+	if attempt == 0 {
 		return err
 	}
 

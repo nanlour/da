@@ -125,7 +125,15 @@ func (bc *BlockChain) checkFork(newBlock *block.Block, sender string) {
 			return
 		}
 
-		if bytes.Equal(block.PreHash[:], bc.MyChain[height-1].Hash[:]) { // Find it in our chain
+		if !bc.VerifyBlock(block) {
+			log.Printf("Block verification failed when check fork at height %d", height)
+			return
+		}
+
+		log.Printf("Adding block %x at height %d to potential new chain", block.Hash(), height)
+		newchain[height] = block
+
+		if len(bc.MyChain) >= int(height) && bytes.Equal(block.PreHash[:], bc.MyChain[height-1].Hash[:]) { // Find it in our chain
 			log.Printf("Found fork point at height %d - reorganizing chain", height)
 
 			// Rollback transactions from our current chain
@@ -177,18 +185,10 @@ func (bc *BlockChain) checkFork(newBlock *block.Block, sender string) {
 			return
 		}
 
-		if height == 1 {
+		if height <= 1 {
 			log.Printf("Reached genesis block height without finding fork point")
 			return
 		}
-
-		if !bc.VerifyBlock(block) {
-			log.Printf("Block verification failed when check fork at height %d", height)
-			return
-		}
-
-		log.Printf("Adding block %x at height %d to potential new chain", block.Hash(), height)
-		newchain[height] = block
 	}
 }
 

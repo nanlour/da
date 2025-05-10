@@ -122,6 +122,8 @@ func (bc *BlockChain) Init() error {
 		bc.TipManager()
 	}()
 
+	wg.Wait()
+
 	return nil
 }
 
