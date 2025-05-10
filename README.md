@@ -105,7 +105,7 @@ The `docker-compose.yml` file orchestrates the deployment of a three-node blockc
 1.  **Build and Start the Network**:
     To launch the network, execute the following command from the root directory of the project:
     ```bash
-    docker-compose up
+    docker compose up
     ```
     This command will:
     - Build the Docker image for the blockchain nodes (if not already built or if changes are detected).

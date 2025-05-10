@@ -57,16 +57,16 @@ func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 		return
 	}
 
+	n.s.peersMu.Lock()
+	n.s.peers[pi.ID] = pi
+	n.s.peersMu.Unlock()
+
 	// Connect to the newly discovered peer
 	err := n.s.host.Connect(n.s.ctx, pi)
 	if err != nil {
 		fmt.Printf("Error connecting to peer %s: %s\n", pi.ID.String(), err)
 		return
 	}
-
-	n.s.peersMu.Lock()
-	n.s.peers[pi.ID] = pi
-	n.s.peersMu.Unlock()
 
 	fmt.Printf("%s Connected to peer: %s\n", n.s.host.ID(), pi.ID.String())
 }
@@ -104,15 +104,15 @@ func (s *Service) connectToBootstrapPeers() {
 			continue
 		}
 
+		s.peersMu.Lock()
+		s.peers[pi.ID] = *pi
+		s.peersMu.Unlock()
+
 		err = s.host.Connect(s.ctx, *pi)
 		if err != nil {
 			fmt.Printf("Failed to connect to bootstrap node %s: %s\n", pi.ID, err)
 		} else {
 			fmt.Printf("Connected to bootstrap node: %s\n", pi.ID)
-
-			s.peersMu.Lock()
-			s.peers[pi.ID] = *pi
-			s.peersMu.Unlock()
 		}
 	}
 }
