@@ -151,7 +151,7 @@ func Difficulty(signature []byte, StakeSum float64, StakeMine float64, MiningDif
 	diff := uint64(rm / t)
 
 	// Ensure diff is smaller than 10 * MiningDifficulty
-	maxDiff := 10 * MiningDifficulty
+	maxDiff := uint64(float64(MiningDifficulty) * (10 * StakeSum / StakeMine))
 	if diff > maxDiff {
 		diff = maxDiff
 	}
